@@ -1,0 +1,173 @@
+"""
+Python-django settings for KHRO datacapture tool (DCT) developed for thr Ministry of Health (Kenya).
+
+"""
+
+import os
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# SECURITY KEY: The secret key has beek kept secret in a location outside the app base directory!
+SECRET_KEY = '3$^b$=-@27(xi&dn65jw0f3=qmx=m&uog-s2=_tx6y&4s$_pu8'
+
+DEBUG =True
+
+ALLOWED_HOSTS = ['localhost','127.0.0.1',]
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240 # This should higher than the default 1000 fields
+
+# Application definition
+INSTALLED_APPS = [
+    'admin_menu', #this is a plug-in app in site_packages used to provide horizontal menu bar
+    'admin_reorder',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework', # register Django REST
+    'data_wizard', #register data import wizard
+    'data_wizard.sources',  # Optional registration but important
+    'import_export', #for inport and export functions
+    'settings',
+    'home', #installed startup AHO data capture app that calls all other modules
+    'indicators',
+    'regions',
+    'elements',
+    'research',
+    'commodities',
+    'common_info',
+    'django_admin_listfilter_dropdown',
+	'bandit', #jsut for testing email sending ...will be removed during full deployment
+
+]
+
+
+# This can be omitted to use the defaults
+DATA_WIZARD = {
+    'BACKEND': 'data_wizard.backends.threading',
+    'LOADER': 'data_wizard.loaders.FileLoader',
+    'PERMISSION': 'rest_framework.permissions.IsAdminUser',
+}
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'admin_reorder.middleware.ModelAdminReorder',
+]
+
+ROOT_URLCONF = 'khro_app.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates') #templates are located inside the project directory
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'khro_app.wsgi.application'
+
+# Database settings to connect to MySQL databases admin and data repository
+
+# Database settings to connect to MySQL databases admin and data repository
+DATABASES = {
+   'default': {   # this is the legacy database
+       'ENGINE': 'django.db.backends.mysql',
+       'NAME': 'khro_database',
+       'OPTIONS': {
+          'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+           },
+       'USER': 'root',
+       'PASSWORD': 'Aho@1234',
+       'HOST': 'localhost',
+       'PORT': '3306',
+   },
+}
+
+# custom user authentication and Password validation settings must be set to avaid error such as:
+# clashes with reverse accessor for 'CustomUser
+AUTH_USER_MODEL = 'settings.CustomUser'
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
+# Internationalization
+# https://docs.djangoproject.com/en/2.1/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'Africa/Nairobi'
+
+USE_I18N = True
+USE_L10N = True
+
+USE_TZ = True
+IMPORT_EXPORT_USE_TRANSACTIONS=True
+
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.getenv(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'repository/') # 'data' is my media folder
+
+ADMIN_LOGO = 'logo2.png' #display the AHO logo on the login screen and admin page
+
+#This is a custome blue theme for the site can be changed to any other as per country preferrences
+AADMIN_STYLE = {
+    'primary-color': '#2B3746',
+    'secondary-color': '#354151',
+    'tertiary-color': '#F2F9FC'
+}
+LOGOUT_REDIRECT_URL='/'
+
+ADMIN_REORDER = (
+    # Keep original label and models
+    'home',
+    'indicators',
+    'research',
+    {'app': 'elements', 'label': 'Raw Data Elements'},
+	{'app': 'regions', 'label': 'Counties Profile'},
+    {'app': 'settings', 'label': 'User and Group Permissions'},
+)
+
+#for testing email sending for purpose of password reset
+EMAIL_BACKEND = 'bandit.backends.smtp.HijackSMTPBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'aho.stevenwho@gmail.com'
+EMAIL_HOST_PASSWORD = 'mburu1234'
+EMAIL_PORT = 587
+
+BANDIT_EMAIL = ['smburu@mtccl.co.ke','aho.stevenwho@gmail.com','libokognekabassad@who.int','ilboudod@who.int','nshimirimanaj@who.int']
