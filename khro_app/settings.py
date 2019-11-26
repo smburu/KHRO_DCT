@@ -1,5 +1,5 @@
 """
-Python-django settings for KHRO datacapture tool (DCT) developed for thr Ministry of Health (Kenya).
+This is a Django settings for KHRO datacapture tool (DCT) developed for thr Ministry of Health (Kenya).
 
 """
 
