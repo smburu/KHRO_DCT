@@ -24,6 +24,10 @@ from home import views
 from rest_framework.documentation import (
     include_docs_urls, get_schemajs_view)
 
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='KHRO API Endpoints')
+
 # Register URL patterns for hitting KHRO endpoints for the registered models
 api_patterns = [
     url(r'^', include(
@@ -62,5 +66,6 @@ urlpatterns = [
     url(r'^api/', include((api_patterns, 'api'), namespace='api')),
     path('docs/', include_docs_urls(title='KHRO', public=False)),
     path('schema/', get_schemajs_view(title='KHRO', public=False)),
+    path(r'swagger-docs/', schema_view),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #configured to access root media

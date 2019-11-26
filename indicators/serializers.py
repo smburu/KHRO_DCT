@@ -72,4 +72,4 @@ class StgIndicatorSuperGroupSerializer(ModelSerializer):
         model = StgIndicatorSuperGroup
         fields = [
             'groupset_id', 'uuid', 'name', 'shortname', 'code', 'description',
-            'source_system', 'public_access', 'sort_order', 'indicator',]
+            'source_system', 'public_access', 'sort_order', 'indicator_groups',] #check misplaced field

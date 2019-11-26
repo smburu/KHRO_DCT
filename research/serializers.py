@@ -36,7 +36,8 @@ class StgDiseaseDomainSerializer(ModelSerializer):
         model = StgDiseaseDomain
         fields = [
             'domain_id', 'uuid', 'name', 'shortname', 'code', 'description',
-            'parent', 'level', 'source_system', 'public_access', 'sort_order',]
+            'parent', 'level', 'source_system', 'public_access', 'sort_order',
+            'location_name']
 
 
 class StgResearchThemesSerializer(ModelSerializer):

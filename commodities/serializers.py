@@ -15,6 +15,6 @@ class FactProductOrderSerializer(ModelSerializer):
     class Meta:
         model = FactHealthCommodities
         fields = [
-            'fact_id','location', 'product', 'valuetype','unit_price',
-            'num_of_orders', 'order_quantity', 'issued_quantity',
-            'order_amount', 'issue_date','comment','public_access']
+            'fact_id','location', 'product','unit_price','num_of_orders',
+            'order_quantity', 'issued_quantity','order_amount', 'issue_date',
+            'comment','public_access']

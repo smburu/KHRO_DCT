@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework', # register Django REST
+    'rest_framework_swagger',
     'data_wizard', #register data import wizard
     'data_wizard.sources',  # Optional registration but important
     'import_export', #for inport and export functions
