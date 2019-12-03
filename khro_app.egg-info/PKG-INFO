@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: khro-app
+Version: 0.0.1.dev0+rc2
+Summary: Khro API
+Home-page: UNKNOWN
+Author: Stephen Mburu
+Author-email: admin@mttcl.co.ke
+License: Proprietary
+Description: This is a Django application called KHRO datacapture tool (DCT) developed for thr Ministry of Health (Kenya). 
+        The tool has been developed by Dr. Stephen Mburu and validated by Daniel Mbugua, Software Enginees and Django Expert.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Alpha
+Classifier: Intended Audience :: KHRO
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Programming Language :: Python :: 3 :: Only
