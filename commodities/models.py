@@ -59,7 +59,6 @@ class FactHealthCommodities(CommonInfo):
         verbose_name = 'Commodities Order'
         verbose_name_plural = 'Commodity Orders'
         ordering = ('product__name','location__name')
-        #unique_together = ('product', 'location',) #enforces concatenated unique constraint
 
     def __str__(self):
          return str(self.product)
