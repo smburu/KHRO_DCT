@@ -21,6 +21,7 @@ from django.conf.urls import url,include
 from django.conf import settings #to facilitate viewing on browser in-built pdf
 from django.conf.urls.static import static #facilitate display of resources
 from home import views
+# Import Django REST Swagger documentation helper here!!
 from rest_framework.documentation import (
     include_docs_urls, get_schemajs_view)
 
@@ -64,7 +65,7 @@ urlpatterns = [
 
     # API-based URL patterns for hitting KHRO endpoints for consuming data in JSON
     url(r'^api/', include((api_patterns, 'api'), namespace='api')),
-    path('docs/', include_docs_urls(title='KHRO', public=False)),
+    path('api/docs/', include_docs_urls(title='KHRO', public=False)),
     path('schema/', get_schemajs_view(title='KHRO', public=False)),
     path(r'swagger-docs/', schema_view),
 
