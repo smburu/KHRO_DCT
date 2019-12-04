@@ -53,6 +53,43 @@ DATA_WIZARD = {
     'PERMISSION': 'rest_framework.permissions.IsAdminUser',
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FileUploadParser',
+
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '10000/day',
+        'anon': '10000/day'
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
+    'DATETIME_FORMAT': 'iso-8601',
+    'DATE_FORMAT': 'iso-8601',
+    'TIME_FORMAT': 'iso-8601',
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -85,8 +122,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'khro_app.wsgi.application'
-
-# Database settings to connect to MySQL databases admin and data repository
 
 # Database settings to connect to MySQL databases admin and data repository
 DATABASES = {
@@ -143,7 +178,7 @@ STATIC_ROOT = os.getenv(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'repository/') # 'data' is my media folder
 
-ADMIN_LOGO = 'logo2.png' #display the AHO logo on the login screen and admin page
+ADMIN_LOGO = 'moh_logo.png' #display the AHO logo on the login screen and admin page
 
 #This is a custome blue theme for the site can be changed to any other as per country preferrences
 AADMIN_STYLE = {

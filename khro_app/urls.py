@@ -9,22 +9,10 @@ from django.conf.urls import url,include
 from django.conf import settings #to facilitate viewing on browser in-built pdf
 from django.conf.urls.static import static #facilitate display of resources
 from home import views
-
-"""
-KHRO Data Capture URL Configurations, This Django Tool is developed by Dr. Stephen Mburu,PhD
-Health Infomatics specialist, University of Nairobi  - Kenya: smburu@uonmbiac.ke\
-"""
-from django.contrib.auth import views as auth_views
-from django.contrib import admin
-from django.urls import path,include
-from django.conf.urls import url,include
-from django.conf import settings #to facilitate viewing on browser in-built pdf
-from django.conf.urls.static import static #facilitate display of resources
-from home import views
-# Import Django REST Swagger documentation helper here!!
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView, TokenRefreshView,)
 from rest_framework.documentation import (
     include_docs_urls, get_schemajs_view)
-
 from rest_framework_swagger.views import get_swagger_view
 
 schema_view = get_swagger_view(title='KHRO API Endpoints')
@@ -51,6 +39,10 @@ urlpatterns = [
     # Site-based URL patterns for hitting KHRO web portal login and dashboard
     path('', views.index, name='index'), # for hitting at the custom login index page
     path('admin/', admin.site.urls),
+    # Toke based authentication
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api-auth/', include('rest_framework.urls')),
 
     path('accounts/login/', views.login_view, name='login'), # URL for Login call to custom view
     path('datawizard/', include('data_wizard.urls')), # Call to smart data import wizard
