@@ -124,8 +124,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'khro_app.wsgi.application'
 
 # Database settings to connect to MySQL databases admin and data repository
-
-# Database settings to connect to MySQL databases admin and data repository
 DATABASES = {
    'default': {   # this is the legacy database
        'ENGINE': 'django.db.backends.mysql',
@@ -134,7 +132,7 @@ DATABASES = {
           'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
            },
        'USER': 'root',
-       'PASSWORD': 'root',
+       'PASSWORD': 'Aho@1234',
        'HOST': 'localhost',
        'PORT': '3306',
    },
@@ -180,7 +178,7 @@ STATIC_ROOT = os.getenv(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'repository/') # 'data' is my media folder
 
-ADMIN_LOGO = 'logo2.png' #display the AHO logo on the login screen and admin page
+ADMIN_LOGO = 'moh_logo.png' #display the AHO logo on the login screen and admin page
 
 #This is a custome blue theme for the site can be changed to any other as per country preferrences
 AADMIN_STYLE = {

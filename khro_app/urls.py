@@ -42,7 +42,6 @@ urlpatterns = [
     # Toke based authentication
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
     path('api-auth/', include('rest_framework.urls')),
 
     path('accounts/login/', views.login_view, name='login'), # URL for Login call to custom view
