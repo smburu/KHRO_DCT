@@ -72,7 +72,7 @@ def get_version():
 
 
 setup(
-    name=name,
+    name=name, # name of the package
     version=get_version(),
     packages=find_packages(exclude=['tests', 'tests.*']),
     description='Khro API',
