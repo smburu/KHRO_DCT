@@ -1,2 +1,2 @@
-This is a Django application called KHRO datacapture tool (DCT) developed for thr Ministry of Health (Kenya). 
-The tool has been developed by Dr. Stephen Mburu and validated by Daniel Mbugua, Software Enginees and Django Expert.
+This is a Django application called KHRO Data Capture Tool (DCT) developed for thr Ministry of Health (MoH-Kenya). 
+The tool has been developed by Dr. Stephen Mburu assisted by Daniel Mbugua, a Software Engineer and Django Expert.
