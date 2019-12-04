@@ -72,6 +72,7 @@ def get_version():
 
 
 setup(
+<<<<<<< HEAD
     name=name, # name of the package
     version=get_version(),
 <<<<<<< HEAD
@@ -82,6 +83,21 @@ setup(
     packages=find_packages(exclude=['tests', 'tests.*']), # Use for other package dependencies.
     description='Khro API', # Short description of the package.
     long_description=open('README.md').read(),# longer description.We are picking README.md
+>>>>>>> khro_dev
+=======
+<<<<<<< HEAD
+    name=name, # name of the package
+    version=get_version(),
+    packages=find_packages(exclude=['tests', 'tests.*']), # Use for other package dependencies.
+    description='Khro API', # Short description of the package.
+    long_description=open('README.md').read(),# longer description.We are picking README.md
+=======
+    name=name,
+    version=get_version(),
+    packages=find_packages(exclude=['tests', 'tests.*']),
+    description='Khro API',
+    long_description=open('README.md').read(),
+>>>>>>> 9d42a21f13567c9aed6858923faf7eb03ea02506
 >>>>>>> khro_dev
     url='',
     author='Stephen Mburu',
@@ -98,9 +114,16 @@ setup(
     ],
     scripts=[
 <<<<<<< HEAD
+<<<<<<< HEAD
         'bin/khro_app_manage'
 =======
         'bin/khro_app_manage' # List of executable files.
+>>>>>>> khro_dev
+=======
+        'bin/khro_app_manage' # List of executable files.
+=======
+        'bin/khro_app_manage'
+>>>>>>> 9d42a21f13567c9aed6858923faf7eb03ea02506
 >>>>>>> khro_dev
     ],
     include_package_data=True
