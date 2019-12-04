@@ -74,9 +74,15 @@ def get_version():
 setup(
     name=name, # name of the package
     version=get_version(),
+<<<<<<< HEAD
     packages=find_packages(exclude=['tests', 'tests.*']),
     description='Khro API',
     long_description=open('README.md').read(),
+=======
+    packages=find_packages(exclude=['tests', 'tests.*']), # Use for other package dependencies.
+    description='Khro API', # Short description of the package.
+    long_description=open('README.md').read(),# longer description.We are picking README.md
+>>>>>>> khro_dev
     url='',
     author='Stephen Mburu',
     author_email='admin@mttcl.co.ke',
@@ -91,7 +97,11 @@ setup(
 
     ],
     scripts=[
+<<<<<<< HEAD
         'bin/khro_app_manage'
+=======
+        'bin/khro_app_manage' # List of executable files.
+>>>>>>> khro_dev
     ],
     include_package_data=True
 )
