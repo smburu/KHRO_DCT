@@ -59,7 +59,7 @@ class StgLocation(CommonInfo):
         null=False, verbose_name = 'Location Code')  # Field name made lowercase.
     description = models.TextField(blank=True, null=True)  # Field name made lowercase.
     parent = models.ForeignKey('self', models.PROTECT,blank=True, null=True,
-        verbose_name = 'Parent Location',default=1,
+        verbose_name = 'Parent Location',
         help_text="You are not allowed to edit this field")  # Field name made lowercase.
     locationlevel = models.ForeignKey('StgLocationLevel', models.PROTECT,
         verbose_name = 'Location Level',
