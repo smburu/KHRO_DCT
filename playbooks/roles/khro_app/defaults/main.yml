@@ -1,0 +1,30 @@
+---
+
+install_dir: "/opt/{{role_name}}"
+log_dir: "/var/log/{{role_name}}"
+venv_dir: "{{install_dir}}/venv"
+static_dir: "{{install_dir}}/static"
+media_dir: "{{install_dir}}/media"
+django_manage: "{{ venv_dir }}/bin/khro_app_manage"
+env_file: "khro_app.env.sh"
+khro_app_database: {user: khro_app, password: "{{khro_app.pg_db_pass}}", name: "{{role_name}}", host: localhost, port: 5432}
+database_url: "postgis://{{khro_app_database.user}}:{{khro_app_database.password}}@{{khro_app_database.host}}:{{khro_app_database.port}}/{{khro_app_database.name}}"
+khro_app_backend: "{{role_name}}_backend"
+khro_app_port: 9050
+gunicorn_timeout: 30
+gunicorn_graceful_timeout: 1
+khro_app_nginx: "{{role_name}}"
+load_default_data: true
+allowed_hosts: ""
+khro_app_supervisor: "{{role_name}}"
+khro_app:
+    pg_db_pass: "dbVpass321"
+    secret_key: "99f7w46^y0u23idfus@2sbt-be$6mbt1o#129olwe!va&bifj"
+
+raven:
+    api_dsn: ""
+
+pg_unix_socket: "/var/run/postgresql/"
+pg_ubuntu_version: "xenial"
+pg_version: "10"
+nginx_port: null

@@ -1,0 +1,4 @@
+include README.rst
+include VERSION
+include version.py
+recursive-include khro_app *.html *.css *.js *.png *.xml *.json *.sql *.txt *xlsx
