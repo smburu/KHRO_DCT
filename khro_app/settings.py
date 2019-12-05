@@ -32,14 +32,14 @@ INSTALLED_APPS = [
     'data_wizard', #register data import wizard
     'data_wizard.sources',  # Optional registration but important
     'import_export', #for inport and export functions
-    'settings',
-    'home', #installed startup AHO data capture app that calls all other modules
-    'indicators',
-    'regions',
-    'elements',
-    'research',
-    'commodities',
-    'common_info',
+    'khro_app.home', #installed startup AHO data capture app that calls all other modules
+    'khro_app.authentication',
+    'khro_app.indicators',
+    'khro_app.regions',
+    'khro_app.elements',
+    'khro_app.research',
+    'khro_app.commodities',
+    'khro_app.common_info',
     'django_admin_listfilter_dropdown',
 	'bandit', #jsut for testing email sending ...will be removed during full deployment
 
@@ -107,7 +107,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates') #templates are located inside the project directory
+            os.path.join(BASE_DIR, 'khro_app/templates') #templates are located inside the project directory
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -132,7 +132,7 @@ DATABASES = {
           'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
            },
        'USER': 'root',
-       'PASSWORD': 'Aho@1234',
+       'PASSWORD': 'root',
        'HOST': 'localhost',
        'PORT': '3306',
    },
@@ -140,7 +140,7 @@ DATABASES = {
 
 # custom user authentication and Password validation settings must be set to avaid error such as:
 # clashes with reverse accessor for 'CustomUser
-AUTH_USER_MODEL = 'settings.CustomUser'
+AUTH_USER_MODEL = 'authentication.CustomUser'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -172,11 +172,14 @@ USE_TZ = True
 IMPORT_EXPORT_USE_TRANSACTIONS=True
 
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'khro_app/static/')
+]
 STATIC_URL = '/static/'
 STATIC_ROOT = os.getenv(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'repository/') # 'data' is my media folder
+MEDIA_ROOT = os.path.join(BASE_DIR, 'khro_app/repository/') # 'data' is my media folder
 
 ADMIN_LOGO = 'moh_logo.png' #display the AHO logo on the login screen and admin page
 
@@ -195,7 +198,7 @@ ADMIN_REORDER = (
     'research',
     {'app': 'elements', 'label': 'Raw Data Elements'},
 	{'app': 'regions', 'label': 'Counties Profile'},
-    {'app': 'settings', 'label': 'User and Group Permissions'},
+    {'app': 'authentication', 'label': 'User and Group Permissions'},
 )
 
 #for testing email sending for purpose of password reset

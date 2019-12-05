@@ -1,0 +1,209 @@
+---
+
+- name: Make directories
+  file: name={{ item }} owner={{ deploy_user }} group={{ deploy_group }} state=directory mode=u=rwx,g=rwx,o=rx recurse=yes
+  with_items:
+      - "{{install_dir}}"
+      - "{{log_dir}}"
+      - "{{static_dir}}"
+      - "{{media_dir}}"
+  become: yes
+  tags: ["khro_app"]
+
+- name: Install khro_app
+  pip: >
+    name=khro_app version={{khro_app_version}} virtualenv={{ venv_dir }} virtualenv_python=/usr/bin/python3.6
+  become: yes
+  become_user: "{{deploy_user}}"
+  tags: ["khro_app"]
+
+
+- name: Change ownership of static dir
+  file: name={{static_dir}} owner=www-data group=www-data state=directory mode=u=rwx,g=rwx,o=rx recurse=yes
+  become: yes
+  tags: ["khro_app"]
+
+
+- name: Create env file
+  template: src={{env_file}} dest={{install_dir}}/env.sh
+  become: yes
+  become_user: "{{deploy_user}}"
+  tags: ["khro_app"]
+
+
+- name: Setup database user
+  postgresql_user: >
+      name={{khro_app_database.user}}
+      password={{khro_app_database.password}}
+      state=present
+      role_attr_flags=LOGIN,SUPERUSER
+      login_host={{khro_app_database.host}}
+      port={{khro_app_database.port}}
+      login_unix_socket={{pg_unix_socket}}
+      encrypted=yes
+  become: yes
+  become_user: postgres
+  tags: ["khro_app"]
+
+
+- name: Setup database
+  postgresql_db: >
+      name={{khro_app_database.name}}
+      owner=postgres
+      login_host={{khro_app_database.host}}
+      port={{khro_app_database.port}}
+      state=present
+      login_unix_socket={{pg_unix_socket}}
+  become: yes
+  become_user: postgres
+  tags: ["khro_app"]
+
+
+- name: Grant database privileges to users on databases
+  postgresql_privs: >
+      db={{khro_app_database.name}}
+      state=present
+      type=database
+      objs={{khro_app_database.name}}
+      role={{khro_app_database.user}}
+      privs=ALL
+      login_host={{khro_app_database.host}}
+      port={{khro_app_database.port}}
+      login_unix_socket={{pg_unix_socket}}
+  become: yes
+  become_user: postgres
+  tags: ["khro_app"]
+
+
+- name: Grant table privileges to users on databases
+  postgresql_privs: >
+      db={{khro_app_database.name}}
+      state=present
+      type=table
+      objs=ALL_IN_SCHEMA
+      role={{khro_app_database.user}}
+      privs=ALL
+      login_host={{khro_app_database.host}}
+      port={{khro_app_database.port}}
+      login_unix_socket={{pg_unix_socket}}
+  become: yes
+  become_user: postgres
+  tags: ["khro_app"]
+
+
+- name: Grant sequence privileges to users on databases
+  postgresql_privs: >
+      db={{khro_app_database.name}}
+      state=present
+      type=sequence
+      objs=ALL_IN_SCHEMA
+      role={{khro_app_database.user}}
+      privs=ALL
+      login_host={{khro_app_database.host}}
+      port={{khro_app_database.port}}
+      login_unix_socket={{pg_unix_socket}}
+  become: yes
+  become_user: postgres
+  tags: ["khro_app"]
+
+
+- name: Grant schema privileges to users on databases
+  postgresql_privs: >
+      db={{khro_app_database.name}}
+      state=present
+      type=schema
+      objs=public
+      role={{khro_app_database.user}}
+      privs=ALL
+      login_host={{khro_app_database.host}}
+      port={{khro_app_database.port}}
+      login_unix_socket={{pg_unix_socket}}
+  become: yes
+  become_user: postgres
+  tags: ["khro_app"]
+
+
+- name: perform django migration
+  shell: '. {{venv_dir}}/bin/activate && . {{ install_dir }}/env.sh && {{ django_manage }} migrate --noinput'
+  become: yes
+  become_user: "{{deploy_user}}"
+  tags: ["khro_app"]
+
+
+# - name: load default data
+#   shell: '. {{venv_dir}}/bin/activate && . {{ install_dir }}/env.sh && {{ django_manage }} load_default_data'
+#   become: yes
+#   when: load_default_data
+#   become_user: "{{deploy_user}}"
+#   tags: ["khro_app"]
+
+- name: collect static files
+  shell: '. {{venv_dir}}/bin/activate && . {{install_dir}}/env.sh && {{django_manage}} collectstatic --noinput --clear'
+  become: yes
+  become_user: "{{deploy_user}}"
+  tags: ["khro_app"]
+
+
+- name: set khro_app to nginx sites-available
+  template: >
+    src=khro_app.nginx.conf
+    dest="/etc/nginx/sites-available/{{khro_app_nginx}}"
+    owner="www-data"
+  become: yes
+  tags: ["khro_app"]
+
+
+- name: set nginx sites-available to sites-enabled
+  file: >
+    src="/etc/nginx/sites-available/{{khro_app_nginx}}"
+    dest="/etc/nginx/sites-enabled/{{khro_app_nginx}}"
+    state=link
+  become: yes
+  tags: ["khro_app"]
+
+
+- name: stop nginx
+  service: >
+    name=nginx state=stopped
+  become: yes
+  tags: ["khro_app"]
+
+
+- name: start nginx
+  service: >
+    name=nginx state=started
+  become: yes
+  tags: ["khro_app"]
+
+
+- name: add runfiles for supervisor
+  template: src={{ item.src }} dest={{install_dir}}/{{ item.dest }}
+  become: yes
+  become_user: "{{deploy_user}}"
+  with_items:
+      - { src: "khro_app.run.sh", dest: "run.sh" }
+  tags: ["khro_app"]
+
+
+- name: add supervisor server config files to supervisor conf.d
+  template: src={{ item.src }} dest={{supervisor_conf_dir}}/{{ item.dest }}
+  become: yes
+  with_items:
+      - { src: "khro_app.supervisor.conf", dest: "{{khro_app_supervisor}}.conf" }
+  tags: ["khro_app"]
+
+
+- name: Reread supervisor
+  shell: supervisorctl reread && supervisorctl update && supervisorctl restart {{khro_app_supervisor}}:*
+  become: yes
+  tags: ["khro_app"]
+
+
+  #- name: Wait for khro_app service to start
+  #pause: seconds=10
+  #tags: ["khro_app", "khro_app_core_package"]
+
+  #- name: Verify khro_app service can be accessed from nginx
+  #uri: url=https://{{server_name}} status_code=302
+  #register: nginxpage
+  #tags: ["khro_app", "khro_app_core_package"]

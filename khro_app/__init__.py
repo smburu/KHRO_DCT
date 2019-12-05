@@ -1,3 +1,3 @@
-__version__ = '0.0.1.dev+rc2'
+__version__ = '0.0.1.dev+rc8'
 
-VERSION = (0, 0, 1, 'dev', 'rc2')
+VERSION = (0, 0, 1, 'dev', 'rc8')

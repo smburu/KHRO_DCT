@@ -8,7 +8,7 @@ from django.urls import path,include
 from django.conf.urls import url,include
 from django.conf import settings #to facilitate viewing on browser in-built pdf
 from django.conf.urls.static import static #facilitate display of resources
-from home import views
+from khro_app.home import views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView,)
 from rest_framework.documentation import (
@@ -20,19 +20,19 @@ schema_view = get_swagger_view(title='KHRO API Endpoints')
 # Register URL patterns for hitting KHRO endpoints for the registered models
 api_patterns = [
     url(r'^', include(
-        ('regions.urls', 'rg'), namespace='rg')),
+        ('khro_app.regions.urls', 'rg'), namespace='rg')),
     url(r'^', include(
-        ('indicators.urls', 'indicators'), namespace='indicators')),
+        ('khro_app.indicators.urls', 'indicators'), namespace='indicators')),
     url(r'^', include(
-        ('research.urls', 'research'), namespace='research')),
+        ('khro_app.research.urls', 'research'), namespace='research')),
     url(r'^', include(
-        ('elements.urls', 'elements'), namespace='elements')),
+        ('khro_app.elements.urls', 'elements'), namespace='elements')),
     url(r'^', include(
-        ('settings.urls', 'settings'), namespace='settings')),
+        ('khro_app.authentication.urls', 'settings'), namespace='settings')),
     url(r'^', include(
-        ('home.urls', 'home'), namespace='home')),
+        ('khro_app.home.urls', 'home'), namespace='home')),
     url(r'^', include(
-        ('commodities.urls', 'Commodities'), namespace='commodities')),
+        ('khro_app.commodities.urls', 'Commodities'), namespace='commodities')),
 ]
 
 urlpatterns = [

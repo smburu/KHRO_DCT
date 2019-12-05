@@ -1,9 +1,1 @@
-commodities
-common_info
-elements
-home
-indicators
 khro_app
-regions
-research
-settings

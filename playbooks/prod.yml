@@ -1,0 +1,42 @@
+---
+
+- hosts: prod
+  user: 'khro'
+  name:  khro_app
+  vars:
+    venus_version: "0.0.1.dev2+aabf6c7c"
+    load_default_data: true
+    gunicorn_timeout: 60
+    gunicorn_graceful_timeout: 1
+    deploy_user: "deploy"
+    deploy_group: "deploy"
+
+  pre_tasks:
+      - name: create deploy user
+        user: name="{{deploy_user}}" groups=www-data,sudo state=present
+        become: yes
+  roles:
+      - common
+      - python
+      - postgresql
+      - nginx
+      - supervisor
+      - acct
+      - letsencrypt
+      - logrotate
+      - {
+          role: "letsencrypt_cert",
+          certificate_domain: "api.vet.cislunar.co",
+          tags: ["prod_api", "prod_api_cert"]
+        }
+      - {
+          role: "khro_app",
+          name: "khro_app",
+          server_name: "api.vet.cislunar.co",
+          allowed_hosts: ".cislunar.co, api.vet.cislunar.co",
+          ssl_on: true,
+          ssl_cert: "/etc/letsencrypt/live/api.vet.cislunar.co/fullchain.pem",
+          ssl_cert_key: "/etc/letsencrypt/live/api.vet.cislunar.co/privkey.pem",
+          ssl_trusted_certificate: "/etc/letsencrypt/live/api.vet.cislunar.co/chain.pem",
+          tags: ["prod_api"]
+        }
