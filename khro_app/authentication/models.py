@@ -20,8 +20,8 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True,blank=False, null=False)
     postcode = models.CharField(max_length=6)
     username = models.CharField(blank=False, null=False, max_length=150)
-    location = models.ForeignKey(StgLocation, models.PROTECT,
-        verbose_name='Location', null=True, blank=True)  # Field name made lowercase.
+    location = models.ForeignKey(
+        StgLocation, models.PROTECT, verbose_name='Location', default=2)
 
     REQUIRED_FIELDS = ['postcode', 'username']
     USERNAME_FIELD = 'email'
