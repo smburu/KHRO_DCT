@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 export SECRET_KEY="{{khro_app.secret_key}}"
 export DEBUG="false"
-export VENUS_DATABASE_URL="{{database_url}}"
+export KHRO_DATABASE_URL="{{database_url}}"
 export STATIC_ROOT="{{static_dir}}"
 export MEDIA_ROOT="{{media_dir}}"
 export VENV_DIR="{{venv_dir}}"
 export RAVEN_DSN="{{raven.api_dsn}}"
-export DJANGO_SETTINGS_MODULE="khro_app.config.settings"
+export DJANGO_SETTINGS_MODULE="khro_app.settings"
 export HTTPS_ENABLED="true"
 export KHRO_ALLOWED_HOSTS="{{allowed_hosts}}"

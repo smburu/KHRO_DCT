@@ -9,6 +9,7 @@ khro_app/wsgi.py
 khro_app.egg-info/PKG-INFO
 khro_app.egg-info/SOURCES.txt
 khro_app.egg-info/dependency_links.txt
+khro_app.egg-info/requires.txt
 khro_app.egg-info/top_level.txt
 khro_app/authentication/__init__.py
 khro_app/authentication/admin.py
@@ -222,6 +223,11 @@ khro_app/regions/serializers.py
 khro_app/regions/tests.py
 khro_app/regions/urls.py
 khro_app/regions/views.py
+khro_app/regions/data/__init__.py
+khro_app/regions/data/location_data.json
+khro_app/regions/management/__init__.py
+khro_app/regions/management/commands/__init__.py
+khro_app/regions/management/commands/load_location_data.py
 khro_app/regions/migrations/0001_initial.py
 khro_app/regions/migrations/__init__.py
 khro_app/repository/datawizard/Book1.xlsx
