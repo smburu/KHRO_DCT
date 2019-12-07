@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 export SECRET_KEY="{{khro_app.secret_key}}"
 export DEBUG="false"
-export KHRO_DATABASE_URL="{{database_url}}"
+export KHRO_DATABASE="{{khro_app_database.name}}"
+export KHRO_DATABASE_USER="{{khro_app_database.user}}"
+export KHRO_DATABASE_PASSWORD="{{khro_app_database.password}}"
 export STATIC_ROOT="{{static_dir}}"
 export MEDIA_ROOT="{{media_dir}}"
 export VENV_DIR="{{venv_dir}}"

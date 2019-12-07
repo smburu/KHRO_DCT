@@ -17,8 +17,6 @@
     - python-virtualenv
     - python-pip
     - python-setuptools
-    - python-psycopg2
-    - python3-psycopg2
   tags: ["python"]
 
 - name: update pip

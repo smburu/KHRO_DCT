@@ -10,19 +10,19 @@
   become: yes
   tags: ["khro_app"]
 
-- name: Install custom import_export
-  pip: >
-    name={{custom_import_export}} version= virtualenv={{ venv_dir }} virtualenv_python=/usr/bin/python3.6
-  become: yes
-  become_user: "{{deploy_user}}"
-  tags: ["khro_app"]
-
-- name: Install khro_app
-  pip: >
-    name=khro_app version={{khro_app_version}} virtualenv={{ venv_dir }} virtualenv_python=/usr/bin/python3.6
-  become: yes
-  become_user: "{{deploy_user}}"
-  tags: ["khro_app"]
+# - name: Install custom import_export
+#   pip: >
+#     name={{custom_import_export}} version= virtualenv={{ venv_dir }} virtualenv_python=/usr/bin/python3.6
+#   become: yes
+#   become_user: "{{deploy_user}}"
+#   tags: ["khro_app"]
+#
+# - name: Install khro_app
+#   pip: >
+#     name=khro_app version={{khro_app_version}} virtualenv={{ venv_dir }} virtualenv_python=/usr/bin/python3.6
+#   become: yes
+#   become_user: "{{deploy_user}}"
+#   tags: ["khro_app"]
 
 
 - name: Change ownership of static dir
@@ -37,98 +37,30 @@
   become_user: "{{deploy_user}}"
   tags: ["khro_app"]
 
-
-- name: Setup database user
-  postgresql_user: >
-      name={{khro_app_database.user}}
-      password={{khro_app_database.password}}
-      state=present
-      role_attr_flags=LOGIN,SUPERUSER
-      login_host={{khro_app_database.host}}
-      port={{khro_app_database.port}}
-      login_unix_socket={{pg_unix_socket}}
-      encrypted=yes
-  become: yes
-  become_user: postgres
-  tags: ["khro_app"]
-
-
-- name: Setup database
-  postgresql_db: >
-      name={{khro_app_database.name}}
-      owner=postgres
-      login_host={{khro_app_database.host}}
-      port={{khro_app_database.port}}
-      state=present
-      login_unix_socket={{pg_unix_socket}}
-  become: yes
-  become_user: postgres
-  tags: ["khro_app"]
-
-
-- name: Grant database privileges to users on databases
-  postgresql_privs: >
-      db={{khro_app_database.name}}
-      state=present
-      type=database
-      objs={{khro_app_database.name}}
-      role={{khro_app_database.user}}
-      privs=ALL
-      login_host={{khro_app_database.host}}
-      port={{khro_app_database.port}}
-      login_unix_socket={{pg_unix_socket}}
-  become: yes
-  become_user: postgres
-  tags: ["khro_app"]
-
-
-- name: Grant table privileges to users on databases
-  postgresql_privs: >
-      db={{khro_app_database.name}}
-      state=present
-      type=table
-      objs=ALL_IN_SCHEMA
-      role={{khro_app_database.user}}
-      privs=ALL
-      login_host={{khro_app_database.host}}
-      port={{khro_app_database.port}}
-      login_unix_socket={{pg_unix_socket}}
-  become: yes
-  become_user: postgres
-  tags: ["khro_app"]
-
-
-- name: Grant sequence privileges to users on databases
-  postgresql_privs: >
-      db={{khro_app_database.name}}
-      state=present
-      type=sequence
-      objs=ALL_IN_SCHEMA
-      role={{khro_app_database.user}}
-      privs=ALL
-      login_host={{khro_app_database.host}}
-      port={{khro_app_database.port}}
-      login_unix_socket={{pg_unix_socket}}
-  become: yes
-  become_user: postgres
-  tags: ["khro_app"]
-
-
-- name: Grant schema privileges to users on databases
-  postgresql_privs: >
-      db={{khro_app_database.name}}
-      state=present
-      type=schema
-      objs=public
-      role={{khro_app_database.user}}
-      privs=ALL
-      login_host={{khro_app_database.host}}
-      port={{khro_app_database.port}}
-      login_unix_socket={{pg_unix_socket}}
-  become: yes
-  become_user: postgres
-  tags: ["khro_app"]
-
+# - name: Setup database user
+#   mysql_user:
+#       name={{khro_app_database.user}}
+#       password={{khro_app_database.password}}
+#       state=present
+#       priv='*.*:ALL'
+#       login_host={{khro_app_database.host}}
+#       login_port={{khro_app_database.port}}
+#       # login_unix_socket={{msql_unix_socket}}
+#   # become: yes
+#   become_user: khro
+#   tags: ["khro_app"]
+#
+#
+# - name: Setup database
+#   mysql_db:
+#       name={{khro_app_database.name}}
+#       login_host={{khro_app_database.host}}
+#       login_port={{khro_app_database.port}}
+#       state=present
+#       login_unix_socket={{pg_unix_socket}}
+#   become: yes
+#   become_user: khro
+#   tags: ["khro_app"]
 
 - name: perform django migration
   shell: '. {{venv_dir}}/bin/activate && . {{ install_dir }}/env.sh && {{ django_manage }} migrate --noinput'
@@ -203,13 +135,3 @@
   shell: supervisorctl reread && supervisorctl update && supervisorctl restart {{khro_app_supervisor}}:*
   become: yes
   tags: ["khro_app"]
-
-
-  #- name: Wait for khro_app service to start
-  #pause: seconds=10
-  #tags: ["khro_app", "khro_app_core_package"]
-
-  #- name: Verify khro_app service can be accessed from nginx
-  #uri: url=https://{{server_name}} status_code=302
-  #register: nginxpage
-  #tags: ["khro_app", "khro_app_core_package"]
