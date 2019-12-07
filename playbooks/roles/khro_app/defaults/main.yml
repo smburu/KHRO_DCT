@@ -28,3 +28,6 @@ pg_unix_socket: "/var/run/postgresql/"
 pg_ubuntu_version: "xenial"
 pg_version: "10"
 nginx_port: null
+
+# TODO
+custom_import_export: "git+https://github.com/dmbuguah/django-import-export.git@eb12d9db0610350fa5bb6dc70199c9cbe1b827b9#egg=django_import_export"

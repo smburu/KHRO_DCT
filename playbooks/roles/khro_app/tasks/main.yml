@@ -10,6 +10,13 @@
   become: yes
   tags: ["khro_app"]
 
+- name: Install custom import_export
+  pip: >
+    name={{custom_import_export}} version= virtualenv={{ venv_dir }} virtualenv_python=/usr/bin/python3.6
+  become: yes
+  become_user: "{{deploy_user}}"
+  tags: ["khro_app"]
+
 - name: Install khro_app
   pip: >
     name=khro_app version={{khro_app_version}} virtualenv={{ venv_dir }} virtualenv_python=/usr/bin/python3.6
@@ -139,7 +146,6 @@
 
 - name: collect static files
   shell: '. {{venv_dir}}/bin/activate && . {{install_dir}}/env.sh && {{django_manage}} collectstatic --noinput --clear'
-  # become: yes
   become_user: "{{deploy_user}}"
   tags: ["khro_app"]
 

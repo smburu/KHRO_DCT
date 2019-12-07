@@ -118,8 +118,7 @@ setup(
         'data-wizard==1.1.0',
         'django-admin-list-filter-dropdown==1.0.2',
         'django-email-bandit==1.5',
-        'djangorestframework-simplejwt-4.3.0',
-        '-e git+https://github.com/dmbuguah/django-import-export.git@eb12d9db0610350fa5bb6dc70199c9cbe1b827b9#egg=django_import_export'
+        'djangorestframework-simplejwt==4.3.0'
     ],
     scripts=[
         'bin/khro_app_manage' # List of executable files.

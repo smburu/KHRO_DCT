@@ -4,7 +4,7 @@
   user: khro
   name:  khro_app
   vars:
-    khro_app_version: "0.0.1.dev0+rc10"
+    khro_app_version: "0.0.1.dev0+rc12"
     load_default_data: true
     gunicorn_timeout: 60
     gunicorn_graceful_timeout: 1
