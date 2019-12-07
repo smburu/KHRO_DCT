@@ -4,6 +4,7 @@ This is a Django settings for KHRO datacapture tool (DCT) developed for thr Mini
 """
 
 import os
+import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,7 +14,8 @@ SECRET_KEY = '3$^b$=-@27(xi&dn65jw0f3=qmx=m&uog-s2=_tx6y&4s$_pu8'
 
 DEBUG =True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1',]
+ALLOWED_HOSTS = os.getenv(
+    'KHRO_ALLOWED_HOSTS', 'localhost,127.0.0.1,khro.cislunar.co').split(',')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240 # This should higher than the default 1000 fields
 
@@ -137,7 +139,9 @@ DATABASES = {
        'PORT': '3306',
    },
 }
-
+# DATABASES = {
+#     'default': dj_database_url.config(env='KHRO_DATABASE_URL')
+# }
 # custom user authentication and Password validation settings must be set to avaid error such as:
 # clashes with reverse accessor for 'CustomUser
 AUTH_USER_MODEL = 'authentication.CustomUser'
@@ -176,7 +180,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'khro_app/static/')
 ]
 STATIC_URL = '/static/'
-STATIC_ROOT = os.getenv(BASE_DIR, 'static')
+STATIC_ROOT = os.getenv(BASE_DIR, BASE_DIR + STATIC_URL)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'khro_app/repository/') # 'data' is my media folder

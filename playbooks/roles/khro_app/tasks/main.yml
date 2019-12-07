@@ -130,16 +130,16 @@
   tags: ["khro_app"]
 
 
-# - name: load default data
-#   shell: '. {{venv_dir}}/bin/activate && . {{ install_dir }}/env.sh && {{ django_manage }} load_default_data'
-#   become: yes
-#   when: load_default_data
-#   become_user: "{{deploy_user}}"
-#   tags: ["khro_app"]
+- name: load default data
+  shell: '. {{venv_dir}}/bin/activate && . {{ install_dir }}/env.sh && {{ django_manage }} load_location_data'
+  become: yes
+  when: load_default_data
+  become_user: "{{deploy_user}}"
+  tags: ["khro_app"]
 
 - name: collect static files
   shell: '. {{venv_dir}}/bin/activate && . {{install_dir}}/env.sh && {{django_manage}} collectstatic --noinput --clear'
-  become: yes
+  # become: yes
   become_user: "{{deploy_user}}"
   tags: ["khro_app"]
 
