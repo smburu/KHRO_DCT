@@ -15,7 +15,7 @@ SECRET_KEY = '3$^b$=-@27(xi&dn65jw0f3=qmx=m&uog-s2=_tx6y&4s$_pu8'
 DEBUG =True
 
 ALLOWED_HOSTS = os.getenv(
-    'KHRO_ALLOWED_HOSTS', 'localhost, 127.0.0.1, khro.cislunar.co').split(',')
+    'KHRO_ALLOWED_HOSTS', 'localhost,127.0.0.1,khro.cislunar.co').split(',')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240 # This should higher than the default 1000 fields
 
@@ -126,22 +126,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'khro_app.wsgi.application'
 
 # Database settings to connect to MySQL databases admin and data repository
-# DATABASES = {
-#    'default': {   # this is the legacy database
-#        'ENGINE': 'django.db.backends.mysql',
-#        'NAME': 'khro_database',
-#        'OPTIONS': {
-#           'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#            },
-#        'USER': 'root',
-#        'PASSWORD': 'root',
-#        'HOST': 'localhost',
-#        'PORT': '3306',
-#    },
-# }
 DATABASES = {
-    'default': dj_database_url.config(env='KHRO_DATABASE_URL')
+   'default': {   # this is the legacy database
+       'ENGINE': 'django.db.backends.mysql',
+       'NAME': 'khro_database',
+       'OPTIONS': {
+          'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+           },
+       'USER': 'root',
+       'PASSWORD': 'root',
+       'HOST': 'localhost',
+       'PORT': '3306',
+   },
 }
+# DATABASES = {
+#     'default': dj_database_url.config(env='KHRO_DATABASE_URL')
+# }
 # custom user authentication and Password validation settings must be set to avaid error such as:
 # clashes with reverse accessor for 'CustomUser
 AUTH_USER_MODEL = 'authentication.CustomUser'
@@ -180,7 +180,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'khro_app/static/')
 ]
 STATIC_URL = '/static/'
-STATIC_ROOT = os.getenv(BASE_DIR, STATIC_URL)
+STATIC_ROOT = os.getenv(BASE_DIR, BASE_DIR + STATIC_URL)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'khro_app/repository/') # 'data' is my media folder
