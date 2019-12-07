@@ -97,9 +97,11 @@ def get_app_list(context, order=True):
     app_list = list(app_dict.values())
     # This code is used to remove (pop) the Auth menu from navigation menu
     auth_menu = [
-        app_items for app_items in app_list if app_items['name'] == 'Auth'][0]
-    auth_menu_index = app_list.index(auth_menu)
-    app_list.pop(auth_menu_index)
+        app_items for app_items in app_list if app_items['name'] == 'Auth']
+    if auth_menu:
+        auth_menu = auth_menu[0]
+        auth_menu_index = app_list.index(auth_menu)
+        app_list.pop(auth_menu_index)
 
     #Note that the ordering dict has been added here to effect the custom ordering
     if order:
