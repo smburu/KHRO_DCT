@@ -1,0 +1,17 @@
+---
+
+- name: Install mysql (and friends)
+  apt: name={{ item }} state=present
+  with_items:
+    - python-mysqldb
+    - mysql-client
+    - mysql-common
+    - mysql-server
+    - default-libmysqlclient-dev
+  become: yes
+  tags: ["mysql"]
+
+# - name: Activate mysql service
+#   service: name=mysql state=started enabled=yes
+#   become: yes
+#   tags: ["mysql"]

@@ -126,22 +126,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'khro_app.wsgi.application'
 
 # Database settings to connect to MySQL databases admin and data repository
-# DATABASES = {
-#    'default': {   # this is the legacy database
-#        'ENGINE': 'django.db.backends.mysql',
-#        'NAME': 'khro_database',
-#        'OPTIONS': {
-#           'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#            },
-#        'USER': 'root',
-#        'PASSWORD': 'root',
-#        'HOST': 'localhost',
-#        'PORT': '3306',
-#    },
-# }
 DATABASES = {
-    'default': dj_database_url.config(env='KHRO_DATABASE_URL')
+   'default': {   # this is the legacy database
+       'ENGINE': 'django.db.backends.mysql',
+       'NAME': os.getenv('KHRO_DATABASE', 'khro_database'),
+       'OPTIONS': {
+          'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+           },
+       'USER': os.getenv('KHRO_DATABASE_USER', 'root'),
+       'PASSWORD': os.getenv('KHRO_DATABASE_PASSWORD', 'root'),
+       'HOST': 'localhost',
+       'PORT': '3306',
+   },
 }
+
 # custom user authentication and Password validation settings must be set to avaid error such as:
 # clashes with reverse accessor for 'CustomUser
 AUTH_USER_MODEL = 'authentication.CustomUser'

@@ -1,15 +1,16 @@
 ---
 
-- hosts: prod
+- hosts: khro-app
   user: khro
   name:  khro_app
   vars:
-    khro_app_version: "0.0.1.dev0+rc12"
+    khro_app_version: "0.0.1.dev0+rc18"
     load_default_data: true
     gunicorn_timeout: 60
     gunicorn_graceful_timeout: 1
     deploy_user: "deploy"
     deploy_group: "deploy"
+    ansible_user: "khro"
 
   pre_tasks:
       - name: create deploy user
@@ -18,25 +19,26 @@
   roles:
       # - common
       # - python
-      # - postgresql
+      # - mysql
       - nginx
       - supervisor
       # - acct
       # - letsencrypt
       # - logrotate
+      # - git
       - {
           role: "letsencrypt_cert",
-          certificate_domain: "khro.cislunar.co",
+          certificate_domain: "khro.xyz",
           tags: ["prod_api", "prod_api_cert"]
         }
       - {
           role: "khro_app",
           name: "khro_app",
-          server_name: "khro.cislunar.co",
-          allowed_hosts: ".cislunar.co, khro.cislunar.co",
+          server_name: "khro.xyz",
+          allowed_hosts: "157.245.228.21,.khro.xyz,khro.xyz",
           ssl_on: true,
-          ssl_cert: "/etc/letsencrypt/live/khro.cislunar.co/fullchain.pem",
-          ssl_cert_key: "/etc/letsencrypt/live/khro.cislunar.co/privkey.pem",
-          ssl_trusted_certificate: "/etc/letsencrypt/live/khro.cislunar.co/chain.pem",
+          ssl_cert: "/etc/letsencrypt/live/khro.xyz/fullchain.pem",
+          ssl_cert_key: "/etc/letsencrypt/live/khro.xyz/privkey.pem",
+          ssl_trusted_certificate: "/etc/letsencrypt/live/khro.xyz/chain.pem",
           tags: ["prod_api"]
         }
