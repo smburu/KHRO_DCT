@@ -4,7 +4,6 @@ This is a Django settings for KHRO datacapture tool (DCT) developed for thr Mini
 """
 
 import os
-import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,7 +14,7 @@ SECRET_KEY = '3$^b$=-@27(xi&dn65jw0f3=qmx=m&uog-s2=_tx6y&4s$_pu8'
 DEBUG =True
 
 ALLOWED_HOSTS = os.getenv(
-    'KHRO_ALLOWED_HOSTS', 'localhost,127.0.0.1,khro.cislunar.co').split(',')
+    'KHRO_ALLOWED_HOSTS', 'localhost,127.0.0.1,khro-dct.health.go.ke').split(',')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240 # This should higher than the default 1000 fields
 
@@ -46,7 +45,6 @@ INSTALLED_APPS = [
 	'bandit', #jsut for testing email sending ...will be removed during full deployment
 
 ]
-
 
 # This can be omitted to use the defaults
 DATA_WIZARD = {
@@ -129,12 +127,12 @@ WSGI_APPLICATION = 'khro_app.wsgi.application'
 DATABASES = {
    'default': {   # this is the legacy database
        'ENGINE': 'django.db.backends.mysql',
-       'NAME': os.getenv('KHRO_DATABASE', 'khro_database'),
+       'NAME': os.getenv('KHRO_DATABASE', 'khrodct_database'),
        'OPTIONS': {
           'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
            },
        'USER': os.getenv('KHRO_DATABASE_USER', 'root'),
-       'PASSWORD': os.getenv('KHRO_DATABASE_PASSWORD', 'root'),
+       'PASSWORD': os.getenv('KHRO_DATABASE_PASSWORD', 'Aho@1234'),
        'HOST': 'localhost',
        'PORT': '3306',
    },
@@ -183,7 +181,7 @@ STATIC_ROOT = os.getenv('STATIC_ROOT', BASE_DIR + STATIC_URL)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'khro_app/repository/') # 'data' is my media folder
 
-ADMIN_LOGO = 'moh_logo.png' #display the AHO logo on the login screen and admin page
+ADMIN_LOGO = 'logo2.png' #display the AHO logo on the login screen and admin page
 
 #This is a custome blue theme for the site can be changed to any other as per country preferrences
 AADMIN_STYLE = {

@@ -5,13 +5,14 @@ from django.contrib.auth.models import User #to be considered in customizing the
 
 from khro_app.home.models import (
     StgDisagregationOptions,StgDisagregationCategory,StgCategoryCombination,
-    StgDatasource,StgDisagoptionCombination, StgMeasuremethod,
-    StgValueDatatype)
+    StgDatasource,StgDisagoptionCombination, StgMeasuremethod,StgValueDatatype,
+    StgPeriodType)
 
 from khro_app.home.resources import(DisaggregateCategoryExport,
     DisaggregateOptionExport,MeasureTypeExport,DataTypeExport)
-from khro_app.common_info.admin import OverideImportExport, OverideExport,OverideExportAdmin
-from import_export.admin import (ImportExportModelAdmin, ImportExportActionModelAdmin,)
+from khro_app.common_info.admin import (OverideImportExport,OverideExport,
+    OverideExportAdmin)
+from import_export.admin import (ImportExportModelAdmin,ImportExportActionModelAdmin,)
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
@@ -25,7 +26,7 @@ class MeasuredAdmin(OverideExport):
     }
 
     resource_class = MeasureTypeExport
-    list_display=['code','name','measure_value','description',]
+    list_display=['name','code','measure_value','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -41,7 +42,21 @@ class DatatypeAdmin(OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
     resource_class = DataTypeExport
-    list_display=['code','name','description',]
+    list_display=['name','code','description',]
+    list_display_links = ('code', 'name',)
+    search_fields = ('name','code',) #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
+    exclude = ('date_created','date_lastupdated','code',)
+
+
+@admin.register(StgPeriodType)
+class periodtypeAdmin(OverideExport):
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'80'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+    #resource_class = DataTypeExport
+    list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name','code',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -58,7 +73,7 @@ class Disaggregate_CategoryAdmin(OverideExport):
     filter_horizontal = ('category_options',) # this should display an inline with multiselect
 
     resource_class = DisaggregateCategoryExport #for export only
-    list_display=['code','name','shortname','description',]
+    list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name', 'shortname','code',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
@@ -75,12 +90,12 @@ class Disaggregation_OptionsAdmin(OverideExport):
                 'fields': ('name','shortname',)
             }),
             ('Detailed Description', {
-                'fields': ('description',),
+                'fields': ('description','public_access'),
             }),
         )
 
     resource_class = DisaggregateOptionExport #for export only
-    list_display=['code','name','shortname','description',]
+    list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -99,14 +114,14 @@ class Disaggregation_CategoryComboAdmin(OverideExport):
                 'fields': ('name','shortname',)
             }),
             ('Detailed Description', {
-                'fields': ('description','categories',),
+                'fields': ('description','categories','public_access'),
             }),
         )
 
     filter_horizontal = ('categories',) # this should display an inline with multiselect
 
     resource_class = DisaggregateOptionExport #for export only
-    list_display=['code','name','shortname','description']
+    list_display=['name','code','shortname','description']
     list_display_links = ('code', 'name',)
     search_fields = ('name','categories') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -125,12 +140,12 @@ class Disaggregation_OptionsComboAdmin(OverideExport):
                 'fields': ('name','shortname',)
             }),
             ('Detailed Description', {
-                'fields': ('description',),
+                'fields': ('description','public_access'),
             }),
         )
 
     resource_class = DisaggregateOptionExport #for export only
-    list_display=['code','name','shortname','description',]
+    list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -154,7 +169,7 @@ class DatasourceAdmin(OverideExport):
             }),
         )
     resource_class = DisaggregateOptionExport #for export only
-    list_display=['code','name','description',]
+    list_display=['name','code','shortname','source_type','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('code','name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15

@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from khro_app.home.models import (StgDisagoptionCombination, StgDatasource,
-    StgMeasuremethod, StgValueDatatype)
+    StgMeasuremethod, StgValueDatatype,StgPeriodType)
 from khro_app.regions.models import StgLocation
 from khro_app.common_info.models import CommonInfo
 
@@ -48,6 +48,16 @@ class StgIndicatorReference(CommonInfo):
     def __str__(self):
         return self.name #display the data source name
 
+    def clean(self): # Don't allow end_period to be greater than the start_period.
+        if StgIndicatorReference.objects.filter(
+        name=self.name).count() and not self.reference_id:
+            raise ValidationError({'name':_(
+                'Sorry! This indicator reference exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgIndicatorReference, self).save(*args, **kwargs)
+
+
 
 class StgIndicator(CommonInfo):
 
@@ -87,27 +97,27 @@ class StgIndicator(CommonInfo):
         verbose_name = 'Primary Data Source')
     reference = models.ForeignKey(StgIndicatorReference, models.PROTECT,
         default=1, verbose_name ='Indicator Reference')  # Field name made lowercase.
-    periodicity = models.IntegerField(blank=True, null=True,default=999,
-        verbose_name = 'Frequency')  # Field name made lowercase.
-    public_access = models.CharField(max_length=6,
-        choices= PUBLIC_ACCESS, null=False,
-        default=PUBLIC_ACCESS[1][1], verbose_name='Publicly Accessible?')
+    periodicity = models.ForeignKey(StgPeriodType, models.PROTECT,
+        verbose_name ='Frequency/Periodicity')  # Field name made lowercase.
+    public_access = models.BooleanField(default=False)
 
     class Meta:
         managed = True
         db_table = 'stg_indicator'
         verbose_name = 'Indicator'
-        verbose_name_plural = 'Indicators'
+        verbose_name_plural = '  Indicators'
         ordering = ('name',)
         unique_together = ('code','hiscode','afrocode')
 
     def __str__(self):
         return self.name #display the indicator name
 
-    # This function makes sure the indicator name is unique instead of enforcing unque constraint on DB
+    # This function enforcer  unique indicator name
     def clean(self): # Don't allow end_period to be greater than the start_period.
-        if StgIndicator.objects.filter(name=self.name).count() and not self.indicator_id:
-            raise ValidationError({'name':_('Sorry!Indicator with this  name exists')})
+        if StgIndicator.objects.filter(
+            name=self.name).count() and not self.indicator_id:
+            raise ValidationError({'name':_(
+                'Sorry!Indicator with this  name exists')})
 
     def save(self, *args, **kwargs):
         super(StgIndicator, self).save(*args, **kwargs)
@@ -115,81 +125,86 @@ class StgIndicator(CommonInfo):
 class StgIndicatorDomain(CommonInfo):
     LEVEL = (1, 2, 3, 4, 5,)
 
-    domain_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    domain_id = models.AutoField(primary_key=True)
     uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')  # Field name made lowercase.
+        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')
     name = models.CharField(max_length=150, blank=False, null=False,
-        verbose_name = 'Domain Name')  # Field name made lowercase.
-    shortname = models.CharField(max_length=45, verbose_name = 'Short Name')  # Field name made lowercase.
+        verbose_name = 'Domain Name')
+    shortname = models.CharField(max_length=45, verbose_name = 'Short Name')
     code = models.CharField(unique=True, max_length=45, blank=True, null=True,
-        verbose_name = 'Domain Code')  # Field name made lowercase.
-    description = models.TextField(blank=True, null=True,)  # Field name made lowercase.
+        verbose_name = 'Domain Code')
+    description = models.TextField(blank=True, null=True,)
     parent = models.ForeignKey('self', models.PROTECT, blank=True, null=True,
-        verbose_name = 'Parent Domain')  # Field name made lowercase.
+        verbose_name = 'Parent Domain')
     level = models.IntegerField(choices=make_choices(LEVEL),default=LEVEL[0],
-        verbose_name='Level',)
-    public_access = models.CharField(max_length=6, choices= PUBLIC_ACCESS, null=False,
-        default=PUBLIC_ACCESS[1][1], verbose_name='Publicly Accessible?')
+        verbose_name='Domain Level',)
+    public_access = models.BooleanField(default=False)
     sort_order = models.IntegerField(null=True,blank=True,verbose_name='Sort Order',)
-
     # this field establishes a many-to-many relationship with the domain table
     indicator = models.ManyToManyField(StgIndicator,db_table='link_indicator_members',
-        blank=True,verbose_name = 'Assign Indicators')  # Field name made lowercase.
+        blank=True,verbose_name = 'Assign Indicators')
 
     class Meta:
         managed = True
         db_table = 'stg_indicator_domain'
-        verbose_name = 'Domain'
+        verbose_name = 'Indicator Domain'
         verbose_name_plural = 'Indicator Domains'
         ordering = ('name', )
 
     def __str__(self):
         return self.name #ddisplay disagregation options
 
-    # This function makes sure a domain name is unique instead of enforcing unque constraint on DB
     def clean(self): # Don't allow end_period to be greater than the start_period.
-        if StgIndicatorDomain.objects.filter(name=self.name).count() and not self.domain_id:
-            raise ValidationError({'name':_('Sorry! Domain with this name exists')})
+        if StgIndicatorDomain.objects.filter(
+            name=self.name).count() and not self.domain_id:
+            raise ValidationError({'name':_(
+                'Sorry! Domain with this name exists')})
 
     def save(self, *args, **kwargs):
         super(StgIndicatorDomain, self).save(*args, **kwargs)
 
 
 class FactDataIndicator(CommonInfo):
-    fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    fact_id = models.AutoField(primary_key=True)
     indicator = models.ForeignKey(StgIndicator, models.PROTECT,blank=False,
-        null=False,verbose_name = 'Indicator Name',)  # Field name made lowercase.
-    location = models.ForeignKey(StgLocation, models.PROTECT,verbose_name = 'Location Name')  # Field name made lowercase.
+        null=False,verbose_name = 'Indicator Name',)
+    location = models.ForeignKey(StgLocation, models.PROTECT,
+        verbose_name = 'Location Name')
     categoryoption = models.ForeignKey(StgDisagoptionCombination,
-        models.PROTECT,blank=False,verbose_name = 'Disaggregation', default=999)  # Field name made lowercase.
-    # This field is used to lookup sources of data such as routine systems, census and surveys
+        models.PROTECT,blank=False,verbose_name='Disaggregation Option',
+        default=999)  # Field name made lowercase.
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
-        null=False, verbose_name = 'Data Source')  # Field name made lowercase.
+        null=False, verbose_name = 'Data Source')
     # This field is used to lookup the type of data required such as text, integer or float
     measure_type = models.ForeignKey(StgMeasuremethod, models.PROTECT,
-        default=2, verbose_name = 'Measure Type')  # Field name made lowercase.
+        default=2, verbose_name = 'Measure Type')
     numerator_value =models.DecimalField(max_digits=20, decimal_places=3,
-        blank=True, null=True, verbose_name = 'Numerator')  # Round off the data value based on custom field.
+        blank=True, null=True, verbose_name = 'Numerator')
     denominator_value =models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True, verbose_name = 'Denominator')  # Field name made lowercase.
+        blank=True, null=True, verbose_name = 'Denominator')
     value_received = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=False, null=False, verbose_name = 'Value')  # Field name made lowercase.
+        blank=False, null=False, verbose_name = 'Value')
     min_value =models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True,verbose_name = 'Minimum Value')  # Field name made lowercase.
+        blank=True, null=True,verbose_name = 'Minimum Value')
     max_value = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True, verbose_name = 'maximum Value')  # Field name made lowercase.
+        blank=True, null=True, verbose_name = 'maximum Value')
     target_value = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True,verbose_name = 'Target Value')  # Field name made lowercase.
+        blank=True, null=True,verbose_name = 'Target Value')
     start_period = models.IntegerField(null=False,blank=False,
-        verbose_name='Start Year', default=datetime.date.today().year,#extract current date year value only
-        help_text="This Year marks the start of the reporting period. NB: 1990 is the Lowest Limit!")
+        verbose_name='Start Year', default=datetime.date.today().year,
+        help_text="This Year marks the start of the reporting period. NB: 1990 is \
+            the Lowest Limit!")
     end_period  = models.IntegerField(null=False,blank=False,
-        verbose_name='Ending Year', default=datetime.date.today().year, #extract current date year value only
-        help_text="This marks the end of reporting. The value must be current year or greater than the start year")
-    period = models.CharField(max_length=25,blank=True,null=False, verbose_name = 'Period') #try to concatenate period field
+        verbose_name='Ending Year', default=datetime.date.today().year,
+        help_text="This marks the end of reporting. The value must be current \
+            year or greater than the start year")
+    period = models.CharField(max_length=25,blank=True,null=False,
+        verbose_name = 'Period')
     status = models.CharField(max_length=10, choices= STATUS_CHOICES,
-        default=STATUS_CHOICES[0][0], blank=True, null=True,verbose_name='Approval Status')  # Field name made lowercase.
-    comment= models.CharField(max_length=5000,blank=True,null=True, verbose_name = 'Comments') # davy's request as of 30/4/2019
+        default=STATUS_CHOICES[0][0], blank=True, null=True,
+            verbose_name='Approval Status')
+    comment= models.CharField(max_length=5000,blank=True,null=True,
+        verbose_name = 'Comments') #
 
     class Meta:
         permissions = (
@@ -201,9 +216,10 @@ class FactDataIndicator(CommonInfo):
         managed = True
         db_table = 'fact_data_indicator'
         verbose_name = 'Indicator Data'
-        verbose_name_plural = '   Data Form'
+        verbose_name_plural = '  Columnar Form'
         ordering = ('indicator__name','location__name')
-        unique_together = ('indicator', 'location', 'categoryoption','start_period','end_period',) #enforces concatenated unique constraint
+        unique_together = ('indicator', 'location', 'categoryoption',
+            'datasource','start_period','end_period',)
 
     def __str__(self):
          return str(self.indicator)
@@ -217,26 +233,32 @@ class FactDataIndicator(CommonInfo):
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if self.start_period <=1990 or self.start_period > datetime.date.today().year:
             raise ValidationError({'start_period':_(
-                'Sorry! The start year cannot be lower than 1990 or greater than the current Year ')})
+                'Sorry! The start year cannot be lower than 1990 or greater than \
+                sthe current Year ')})
         elif self.end_period <=1990 or self.end_period > datetime.date.today().year:
             raise ValidationError({'end_period':_(
-                'Sorry! The ending year cannot be lower than the start year or greater than the current Year ')})
+                'Sorry! The ending year cannot be lower than the start year or \
+                greater than the current Year ')})
         elif self.end_period < self.start_period and self.start_period is not None:
             raise ValidationError({'end_period':_(
-                'Sorry! Ending period cannot be lower than the start period. Please make corrections')})
+                'Sorry! Ending period cannot be lower than the start period. \
+                Please make corrections')})
 
         #This logic ensures that a maximum value is provided for a corresponing minimum value
         if self.min_value is not None and self.min_value !='':
             if self.max_value is None or self.max_value < self.min_value:
                 raise ValidationError({'max_value':_(
-                    'Data Integrity Problem! You must provide a Maximum that is greater that Minimum value ')})
+                    'Data Integrity Problem! You must provide a Maximum that is \
+                    greater that Minimum value ')})
             elif self.value_received is not None and self.value_received <= self.min_value:
                 raise ValidationError({'min_value':_(
-                    'Data Integrity Problem! Minimun value cannot be greater that the nominal value')})
+                    'Data Integrity Problem! Minimun value cannot be greater \
+                    that the nominal value')})
 
     """
-    The purpose of this method is to concatenate the date that are entered as start_period and end_period and save
-    the concatenated value as a string in the database ---this is very important to take care of Davy's date complexity
+    The purpose of this method is to concatenate the date that are entered as
+    start_period and end_period and savethe concatenated value as a string in
+    the database ---this is very important to take care of Davy's date complexity
     """
     def get_period(self):
         if self.period is None or (self.start_period and self.end_period):
@@ -276,16 +298,17 @@ class IndicatorProxy(StgIndicator):
         for model in app_models:
             opts = model._meta
             if opts.proxy:
-                # Can't use 'get_for_model' here since it doesn't return correct 'ContentType' for proxy models
-                # See https://code.djangoproject.com/ticket/17648
+            # Can't use 'get_for_model'; return correct 'ContentType' for proxy models
                 app_label, model = opts.app_label, opts.object_name.lower()
                 ctype = ContentType.objects.get_by_natural_key(app_label, model)
                 ctypes.add(ctype)
                 for perm in _get_all_permissions(opts, ctype):
                     searched_perms.append((ctype, perm))
-
-        # Find all the Permissions that have a content_type for a model we're looking for.
-        #We don't need to check for codenames since we already have  a list of the ones we're going to create.
+        """
+        Find all the Permissions that have a content_type for a model we're
+        looking for.We don't need to check for codenames since we already have
+        a list of the ones we're going to create.
+        """
         all_perms = set(Permission.objects.filter(
             content_type__in=ctypes,
         ).values_list(
@@ -301,14 +324,15 @@ class IndicatorProxy(StgIndicator):
         if verbosity >= 2:
             for obj in objs:
                 sys.stdout.write("Adding permission '%s'" % obj)
-        models.signals.post_migrate.connect(create_proxy_permissions) #replaced post_syncdb with post_migrate
+        models.signals.post_migrate.connect(create_proxy_permissions)
         models.signals.post_migrate.disconnect(update_contenttypes)
 
     class Meta:
-        managed = True
-        verbose_name = 'Tabular Indicator Form'
-        verbose_name_plural = 'Data Grid'
         proxy = True
+        managed = True
+        verbose_name = 'Tabular Form'
+        verbose_name_plural = '   Tabular Forms'
+
 
     """
     This clean method was contributed by Daniel Mbugua to resolve the issue
@@ -320,50 +344,53 @@ class IndicatorProxy(StgIndicator):
 
 # Create achive table for khro indicator data
 class Fact_indicator_archive(CommonInfo):
-    fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    fact_id = models.AutoField(primary_key=True)
     indicator = models.ForeignKey(StgIndicator, models.PROTECT,blank=False,
-        null=False,verbose_name = 'Indicator Name',)  # Field name made lowercase.
+        null=False,verbose_name = 'Indicator Name',)
     location = models.ForeignKey(StgLocation, models.PROTECT,
-        verbose_name = 'Location Name')  # Field name made lowercase.
+        verbose_name = 'Location Name')
     categoryoption = models.ForeignKey(StgDisagoptionCombination,
-        models.PROTECT,blank=False,verbose_name = 'Disaggregation', default=999)  # Field name made lowercase.
+        models.PROTECT,blank=False,verbose_name = 'Disaggregation', default=999)
     # This field is used to lookup sources of data such as routine systems, census and surveys
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
-        null=False, verbose_name = 'Data Source')  # Field name made lowercase.
-    # This field is used to lookup the type of data required such as text, integer or float
+        null=False, verbose_name = 'Data Source')
+    # This field is used to lookup the type of data required e.g. integer, string
     measure_type = models.ForeignKey(StgMeasuremethod, models.PROTECT,
-        default=2, verbose_name = 'Measure Type')  # Field name made lowercase.
-    numerator_value = models.DecimalField(max_digits=20, decimal_places=3,
-        blank=True, null=True, verbose_name = 'Numerator')  # Field name made lowercase.
-    denominator_value = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True, verbose_name = 'Denominator')  # Field name made lowercase.
+        default=2, verbose_name = 'Measure Type')
+    numerator_value =models.DecimalField(max_digits=20, decimal_places=3,
+        blank=True, null=True, verbose_name = 'Numerator')
+    denominator_value =models.DecimalField(max_digits=20,decimal_places=3,
+        blank=True, null=True, verbose_name = 'Denominator')
     value_received = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=False, verbose_name = 'Value')  # Field name made lowercase.
-    min_value = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True,verbose_name = 'Minimum Value')  # Field name made lowercase.
+        blank=False, null=False, verbose_name = 'Value')
+    min_value =models.DecimalField(max_digits=20,decimal_places=3,
+        blank=True, null=True,verbose_name = 'Minimum Value')
     max_value = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True, verbose_name = 'maximum Value')  # Field name made lowercase.
+        blank=True, null=True, verbose_name = 'maximum Value')
     target_value = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True,verbose_name = 'Target Value')  # Field name made lowercase.
+        blank=True, null=True,verbose_name = 'Target Value')
     start_period = models.IntegerField(null=False,blank=False,
-        verbose_name='Start Year', default=datetime.date.today().year,#extract current date year value only
-        help_text="This marks the start of the reporting period. Lowest is 1990!")
+        verbose_name='Start Year', default=datetime.date.today().year,
+        help_text="This Year marks the start of the reporting period. \
+        NB: 1990 is the Lowest Limit!")
     end_period  = models.IntegerField(null=False,blank=False,
-        verbose_name='Ending Year', default=datetime.date.today().year, #extract current date year value only
-        help_text="Marks end of reporting Perios. Must be greater than start year")
+        verbose_name='Ending Year', default=datetime.date.today().year,
+        help_text="This marks the end of reporting. The value must be current \
+        year or greater than the start year")
     period = models.CharField(max_length=25,blank=True,null=False,
-        verbose_name = 'Period') #try to concatenate period field
+        verbose_name = 'Period')
     status = models.CharField(max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0], blank=True, null=True,
-        verbose_name='Approval Status')  # Field name made lowercase.
+            verbose_name='Approval Status')
     comment= models.CharField(max_length=5000,blank=True,null=True,
-        verbose_name = 'Comments') # davy's request as of 30/4/2019
+        verbose_name = 'Comments')
+
 
     class Meta:
         managed = False
         db_table = 'khro_indicator_archive'
         verbose_name = 'Archive'
-        verbose_name_plural = 'Repository Archive'
+        verbose_name_plural = 'Facts Archive'
         ordering = ('indicator__name','location__name')
 
     def __str__(self):
@@ -371,17 +398,17 @@ class Fact_indicator_archive(CommonInfo):
 
 
 class StgNarrative_Type(CommonInfo):
-    type_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    type_id = models.AutoField(primary_key=True)
     uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')  # Field name made lowercase.
+        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')
     name = models.CharField( max_length=500, blank=False, null=False,
-        verbose_name = 'Narrative Type')  # Field name made lowercase.
+        verbose_name = 'Narrative Type')
     shortname = models.CharField(unique=True, max_length=120,blank=False,
-        null=True, verbose_name = 'Short Name')  # Field name made lowercase.
+        null=True, verbose_name = 'Short Name')
     code = models.CharField(unique=True, max_length=50, blank=True,null=False,
-        verbose_name = 'Narrative Code')  # Field name made lowercase.
+        verbose_name = 'Narrative Code')
     description = models.TextField(blank=False, null=True,
-        verbose_name = 'Description' )  # Field name made lowercase.
+        verbose_name = 'Description' )
 
     class Meta:
         managed = True
@@ -391,134 +418,195 @@ class StgNarrative_Type(CommonInfo):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name #display the knowledge product category name
+        return self.name
+
+    def clean(self):
+        if StgNarrative_Type.objects.filter(
+            name=self.name).count() and not self.type_id:
+            raise ValidationError({'name':_(
+                'Sorry! Narrative type with this name exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgNarrative_Type, self).save(*args, **kwargs)
 
 
 class StgAnalyticsNarrative(CommonInfo):
-    analyticstext_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    narrative_id = models.AutoField(primary_key=True)
     uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')  # Field name made lowercase.
+        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')
     narrative_type = models.ForeignKey(StgNarrative_Type,models.PROTECT,
-        verbose_name = 'Narrative Type', db_column='narrative_type_id') #db_column='narrative_type_id',
-    # domain = models.ForeignKey(StgIndicatorDomain,models.PROTECT,  blank=False, null=False,
-    #     verbose_name = 'Indicator Domain',  default = 1)
+        verbose_name = 'Narrative Type', db_column='narrative_type_id')
+    domain = models.ForeignKey(StgIndicatorDomain,models.PROTECT, blank=False,
+        null=False,verbose_name = 'Theme Name', default = 1)
     location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
-        null=False,verbose_name = 'Location', default = 1)  # Field cannot be deleted without deleting its dependants
+        null=False,verbose_name = 'Location', default = 1)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
         verbose_name = 'Narrative Code')  # Field name made lowercase.
     narrative_text = models.TextField(blank=False, null=False,
-        verbose_name= ' Narrative Text')  # Field name made lowercase.
+        verbose_name= 'Narrative Text')  # Field name made lowercase.
+    start_period = models.IntegerField(null=False,blank=False,
+        verbose_name='Start Year', default=datetime.date.today().year,
+        help_text="This Year marks the start of the reporting period. \
+        NB: 1990 is the Lowest Limit!")
+    end_period  = models.IntegerField(null=False,blank=False,
+        verbose_name='Ending Year', default=datetime.date.today().year,
+        help_text="This marks the end of reporting. The value must be current \
+        year or greater than the start year")
+    period = models.CharField(max_length=25,blank=True,null=False,
+        verbose_name = 'Period')
+    status = models.CharField(max_length=10, choices= STATUS_CHOICES,
+        default=STATUS_CHOICES[0][0], blank=True, null=True,
+            verbose_name='Approval Status')
 
     class Meta:
         managed = True
         db_table = 'stg_analytics_narrative'
-        verbose_name = 'Analytics Narrative'
-        verbose_name_plural = 'Domain-level Narratives'
+        verbose_name = 'Thematic Narrative'
+        verbose_name_plural = 'Thematic Narratives'
         ordering = ('-date_created',) #sorted in descending order by date created
 
     def __str__(self):
         return self.narrative_text
 
-class StgIndicatorNarrative(CommonInfo):
-     indicatornarrative_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-     uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')  # Field name made lowercase.
-     narrative_type = models.ForeignKey(StgNarrative_Type,models.PROTECT,
-        verbose_name = 'Narrative Type',db_column='narrative_type_id') #db_column='narrative_type_id',
-     indicator = models.ForeignKey('StgIndicator', models.PROTECT,blank=False,
-        null=False,verbose_name = 'Indicator Name',)
-     location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
-        null=False,verbose_name = 'Location', default = 1)  # Field cannot be deleted without deleting its dependants
-     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
-        verbose_name = 'Narrative Code')  # Field name made lowercase.
-     narrative_text = models.TextField(blank=False, null=False,
-        verbose_name= ' Narrative Text')  # Field name made lowercase.
+    def get_period(self):
+        if self.period is None or (self.start_period and self.end_period):
+            if self.start_period == self.end_period:
+                period = int(self.start_period)
+            else:
+                period =str(int(self.start_period))+"-"+ str(int(self.end_period))
+        return period
 
-     class Meta:
+    def save(self, *args, **kwargs):
+        self.period = self.get_period()
+        super(StgAnalyticsNarrative, self).save(*args, **kwargs)
+
+
+class StgIndicatorNarrative(CommonInfo):
+    narrative_id = models.AutoField(primary_key=True)
+    uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')
+    type = models.ForeignKey(StgNarrative_Type,models.PROTECT,
+        verbose_name = 'Narrative Type',db_column='type_id')
+    indicator = models.ForeignKey('StgIndicator', models.PROTECT,blank=False,
+        null=False,verbose_name = 'Indicator Name',)
+    location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
+        null=False,verbose_name = 'Location', default = 1)
+    code = models.CharField(unique=True, max_length=50, blank=True, null=False,
+        verbose_name = 'Narrative Code')
+    narrative_text = models.TextField(blank=False, null=False,
+        verbose_name= ' Narrative Text')
+    start_period = models.IntegerField(null=False,blank=False,
+        verbose_name='Start Year', default=datetime.date.today().year,
+        help_text="This Year marks the start of the reporting period. \
+        NB: 1990 is the Lowest Limit!")
+    end_period  = models.IntegerField(null=False,blank=False,
+        verbose_name='Ending Year', default=datetime.date.today().year,
+        help_text="This marks the end of reporting. The value must be current \
+        year or greater than the start year")
+    period = models.CharField(max_length=25,blank=True,null=False,
+        verbose_name = 'Period')
+    status = models.CharField(max_length=10, choices= STATUS_CHOICES,
+        default=STATUS_CHOICES[0][0], blank=True, null=True,
+            verbose_name='Approval Status')
+
+    class Meta:
          managed = True
          db_table = 'stg_indicator_narrative'
          verbose_name = 'Indicator Narrative'
-         verbose_name_plural = 'Indicator-level Narratives'
+         verbose_name_plural = 'Indicator Narratives'
          ordering = ('-date_created',)
 
-     def __str__(self):
+    def __str__(self):
          return self.narrative_text
 
+    def get_period(self):
+        if self.period is None or (self.start_period and self.end_period):
+            if self.start_period == self.end_period:
+                period = int(self.start_period)
+            else:
+                period =str(int(self.start_period))+"-"+ str(int(self.end_period))
+        return period
+
+
+    def save(self, *args, **kwargs):
+        self.period = self.get_period()
+        super(StgIndicatorNarrative, self).save(*args, **kwargs)
 
 class StgIndicatorGroup(CommonInfo):
-    group_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    group_id = models.AutoField(primary_key=True)
     uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')  # Field name made lowercase.
+        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')
     name = models.CharField(max_length=200, blank=False, null=False,
-        verbose_name = 'Group Name')  # Field
+        verbose_name = 'Group Name')
     shortname = models.CharField(unique=True, max_length=120, blank=False,
-        null=False, verbose_name = 'Short Name')  # Field name made lowercase.
+        null=False, verbose_name = 'Short Name')
     code = models.CharField(unique=True, max_length=50, blank=True,
-        null=False, verbose_name = 'Group Code')  # Field name made lowercase.
+        null=False, verbose_name = 'Group Code')
     description = models.TextField(blank=False, null=False,
-        verbose_name ='Description' )  # Field name made lowercase.
+        verbose_name ='Description' )
     source_system = models.CharField(max_length=100,blank=True, null=True,
-        verbose_name = 'External Source')  # Field name made lowercase.
-    public_access = models.CharField(max_length=6, choices= PUBLIC_ACCESS, null=False,
-        default=PUBLIC_ACCESS[1][1], verbose_name='Publicly Accessible?')
+        verbose_name = 'External Source')
+    public_access = models.BooleanField(default=False)
     sort_order = models.IntegerField(null=True,blank=True,verbose_name='Sort Order',)
     indicator = models.ManyToManyField(StgIndicator,
-        db_table='stg_indicator_membership', blank=True,)  # many-to-many relationship.
+        db_table='link_indicator_group', blank=True,)
 
     class Meta:
         managed = True
         db_table = 'stg_indicator_group'
-        verbose_name = 'Group'
-        verbose_name_plural = 'Groups'
+        verbose_name = 'Indicator Group'
+        verbose_name_plural = 'Indicator Groups'
 
     def __str__(self):
         return str(self.name)
 
-    # This method ensures that the indicator name is unique instead of enforcing unque constraint on DB
-    def clean(self): # Don't allow end_period to be greater than the start_period.
+    def clean(self):
         if StgIndicatorGroup.objects.filter(
             name=self.name).count() and not self.group_id:
             raise ValidationError({'name':_(
-                    'Sorry! Indicator Group with same name already exists')})
+                    'Sorry! Indicator Group with the same name exists')})
 
     def save(self, *args, **kwargs):
         super(StgIndicatorGroup, self).save(*args, **kwargs)
 
+    def get_indicators(self):
+        return "\n".join([str(p.name) for p in self.indicator.all()])
 
 class StgIndicatorSuperGroup(CommonInfo):
-    groupset_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    groupset_id = models.AutoField(primary_key=True)
     uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')  # Field name made lowercase.
+        default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')
     name = models.CharField(max_length=200, blank=False, null=False,
-        verbose_name = 'Group Name')  # Field
+        verbose_name = 'Group Name')
     shortname = models.CharField(unique=True, max_length=120, blank=False,
-        null=False, verbose_name = 'Short Name')  # Field name made lowercase.
+        null=False, verbose_name = 'Short Name')
     code = models.CharField(unique=True, max_length=50, blank=True,
-        null=False, verbose_name = 'Group Code')  # Field name made lowercase.
-    description = models.TextField(blank=False, null=False,verbose_name ='Description' )  # Field name made lowercase.
+        null=False, verbose_name = 'Group Code')
+    description = models.TextField(blank=False, null=False,
+        verbose_name ='Description' )
     source_system = models.CharField(max_length=100,blank=True, null=True,
-        verbose_name = 'External Source')  # Field name made lowercase.
-    public_access = models.CharField(max_length=6, choices= PUBLIC_ACCESS, null=False,
-        default=PUBLIC_ACCESS[1][1], verbose_name='Publicly Accessible?')
-    sort_order = models.IntegerField(null=True,blank=True,verbose_name='Sort Order',)
+        verbose_name = 'External Source')
+    public_access = models.BooleanField(default=False)
+    sort_order = models.IntegerField(null=True,blank=True,
+        verbose_name='Sort Order',)
     indicator_groups = models.ManyToManyField(StgIndicatorGroup,
-        db_table='link_indicator_supergroup',blank=True,verbose_name='Indicator Groups',)  # creates a many-to-many relationship.
+        db_table='link_indicator_supergroup',blank=True,
+        verbose_name='Indicator Groups',)
 
     class Meta:
         managed = True
         db_table = 'stg_indicator_supergroup'
-        verbose_name = 'Super Group'
-        verbose_name_plural = 'Super Groups'
+        verbose_name = 'Indicator Groupset'
+        verbose_name_plural = 'Indicator Groupsets'
 
     def __str__(self):
         return str(self.name)
 
-    # This method ensures that the indicator name is unique instead of enforcing unque constraint on DB
-    def clean(self): # Don't allow end_period to be greater than the start_period.
+    def clean(self):
         if StgIndicatorSuperGroup.objects.filter(
             name=self.name).count() and not self.groupset_id:
             raise ValidationError({'name':_(
-                'Sorry! Indicator Groupset with same name already exists')})
+                'Sorry! Indicator Super group with the same name exists')})
 
     def save(self, *args, **kwargs):
         super(StgIndicatorSuperGroup, self).save(*args, **kwargs)

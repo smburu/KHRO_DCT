@@ -4,7 +4,7 @@ from rest_framework.serializers import (
 from khro_app.research.models import (
     StgResearchTopic, StgKnowledgePipelineType, StgKnowledgePipeline,
     StgDiseaseDomain, StgResearchThemes, StgEthicsCommittee,
-    StgResearchProposal, StgResearchPublication)
+    StgResearchProposal)
 
 class StgResearchTopicSerializer(ModelSerializer):
     class Meta:
@@ -67,14 +67,4 @@ class StgResearchProposalSerializer(ModelSerializer):
             'product', 'erc', 'research_objective', 'principal_researcher',
             'research_team', 'num_of_researchers', 'affiliate_insititutions',
             'funding_source', 'start_date', 'end_date', 'approval_status',
-            'sort_order']
-
-
-class StgResearchPublicationSerializer(ModelSerializer):
-    class Meta:
-        model = StgResearchPublication
-        fields = [
-            'product', 'main_author', 'co_authors', 'author_affiliations',
-            'abstract', 'publisher', 'internal_link', 'cover_image',
-            'external_link', 'quality_level', 'period', 'sharing_status',
             'sort_order']

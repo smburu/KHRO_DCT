@@ -1,5 +1,4 @@
 import data_wizard #this may be the Godsent solution to data import madness that has refused to go
-from data_wizard.sources.models import FileSource,URLSource #customize import soureces
 
 from django.contrib import admin
 from django.contrib.admin import AdminSite #customize adminsite

@@ -5,12 +5,12 @@ from rest_framework import viewsets
 from khro_app.research.models import (
     StgResearchTopic, StgKnowledgePipelineType, StgKnowledgePipeline,
     StgDiseaseDomain, StgResearchThemes, StgEthicsCommittee,
-    StgResearchProposal, StgResearchPublication)
+    StgResearchProposal)
 from khro_app.research.serializers import (
     StgResearchTopicSerializer, StgKnowledgePipelineTypeSerializer,
     StgKnowledgePipelineSerializer, StgDiseaseDomainSerializer,
     StgResearchThemesSerializer, StgEthicsCommitteeSerializer,
-    StgResearchProposalSerializer, StgResearchPublicationSerializer)
+    StgResearchProposalSerializer)
 
 class StgResearchTopicViewSet(viewsets.ModelViewSet):
     queryset = StgResearchTopic.objects.all()
@@ -45,8 +45,3 @@ class StgEthicsCommitteeViewSet(viewsets.ModelViewSet):
 class StgResearchProposalViewSet(viewsets.ModelViewSet):
     queryset = StgResearchProposal.objects.all()
     serializer_class = StgResearchProposalSerializer
-
-
-class StgResearchPublicationViewSet(viewsets.ModelViewSet):
-    queryset = StgResearchPublication.objects.all()
-    serializer_class = StgResearchPublicationSerializer

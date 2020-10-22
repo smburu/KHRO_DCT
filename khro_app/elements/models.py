@@ -20,10 +20,13 @@ def make_choices(values):
 
 def create_proxy_permissions(app, created_models, verbosity, **kwargs):
     """
-    Creates permissions for proxy models which are not created automatically by 'django.contrib.auth.management.create_permissions'.
-    Since we can't rely on 'get_for_model' we must fallback to 'get_by_natural_key'. However, this method doesn't automatically create
-    missing 'ContentType' so we must ensure all the models' 'ContentType's are created before running this method. We do so by un
-    -registering the 'update_contenttypes' 'post_migrate' signal and calling it in here just before doing everything.
+    Creates permissions for proxy models which are not created automatically by
+    'django.contrib.auth.management.create_permissions'.Since we can't rely on
+    'get_for_model' we must fallback to 'get_by_natural_key'. However, this method
+    doesn't automatically createmissing 'ContentType' so we must ensure all
+    models' 'ContentType's are created before running this method. We do so by un
+    -registering the 'update_contenttypes' 'post_migrate' signal and calling it
+    in here just before doing everything.
     """
     update_contenttypes(app, created_models, verbosity, **kwargs)
     app_models = models.get_models(app)
@@ -65,17 +68,16 @@ def create_proxy_permissions(app, created_models, verbosity, **kwargs):
 
 
 class StgDataElement(CommonInfo):
-
     DOMAIN_TYPE = ('Aggregate','Tracker', 'Not Applicable') #domain type concept is inherited from DHIS2
 
-    # These are functions used in systems like DHIS2 to aggregate data based on core dimensions. DHIS2
     # mostly uses Sum and average to aggregate data on period hierarchy-->weekly,monthy,quarterly,annualy
-    AGGREGATION_TYPE = ('Sum','Average', 'Count','Standard Deviation', 'Variance', 'Min', 'max','None')
-
+    AGGREGATION_TYPE = ('Sum','Average','Count','Standard Deviation',
+        'Variance','Min','max','None')
     dataelement_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Universal ID')  # Field name made lowercase.
-    name = models.CharField(max_length=230, blank=False, null=False,verbose_name = 'Name')  # Field name made lowercase.
+    name = models.CharField(max_length=230, blank=False, null=False,
+        verbose_name = 'Data Element Name')  # Field name made lowercase.
     shortname = models.CharField(max_length=50, verbose_name = 'Short Name')  # Field name made lowercase.
     code = models.CharField( unique=True, max_length=45,blank=True, null=False)  # Field name made lowercase.
     dhis_uid = models.CharField(unique=True, max_length=50,verbose_name = 'DHIS2 ID')
@@ -83,13 +85,14 @@ class StgDataElement(CommonInfo):
     domain_type = models.CharField(max_length=50, null=True, choices=make_choices(DOMAIN_TYPE),
         default=DOMAIN_TYPE[2])
     dimension_type = models.CharField(max_length=50, blank=True, null=True)
-    value_type = models.ForeignKey(StgValueDatatype, models.PROTECT,verbose_name='Value Type')
+    value_type = models.ForeignKey(StgValueDatatype, models.PROTECT,
+        verbose_name='Data Type')
     categoryoption = models.ForeignKey(StgCategoryCombination, models.PROTECT,
         verbose_name='Disaggregation Combination')
     aggregation_type = models.CharField(max_length=45, choices=make_choices(AGGREGATION_TYPE),
         default=AGGREGATION_TYPE[0],verbose_name = 'Data Aggregation',)  # Field name made lowercase.
     source_system = models.CharField(max_length=100, blank=True, null=True)
-    public_access = models.CharField(max_length=6,default='false')
+    public_access = models.BooleanField(default=False)
 
     class Meta:
         managed = True
@@ -104,7 +107,7 @@ class StgDataElement(CommonInfo):
     # This function makes sure data elements name is unique instead of enforcing unque constraint on DB
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if StgDataElement.objects.filter(name=self.name).count() and not self.dataelement_id:
-            raise ValidationError({'name':_('Sorry! Data element with this name already exists')})
+            raise ValidationError({'name':_('Sorry! Data element with same name exists')})
     def save(self, *args, **kwargs):
         super(StgDataElement, self).save(*args, **kwargs)
 
@@ -219,7 +222,7 @@ class StgDataElementGroup(CommonInfo):
         null=False, verbose_name = 'Group Code')  # Field name made lowercase.
     description = models.TextField(blank=False, null=False,verbose_name ='Description' )  # Field name made lowercase.
     dataelement = models.ManyToManyField(StgDataElement,
-        db_table='stg_data_element_membership',blank=True)  # Field name made lowercase.
+        db_table='link_data_element_members',blank=True)  # Field name made lowercase.
 
     class Meta:
         managed = True
@@ -233,7 +236,7 @@ class StgDataElementGroup(CommonInfo):
     # This method ensures that the indicator name is unique instead of enforcing unque constraint on DB
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if StgDataElementGroup.objects.filter(name=self.name).count() and not self.group_id:
-            raise ValidationError({'name':_('Sorry! Data Elements Group with same name already exists')})
+            raise ValidationError({'name':_('Sorry! Data Elements Group with same name exists')})
 
     def save(self, *args, **kwargs):
         super(StgDataElementGroup, self).save(*args, **kwargs)

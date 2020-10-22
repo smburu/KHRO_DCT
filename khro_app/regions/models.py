@@ -11,9 +11,10 @@ class StgLocationLevel(CommonInfo):
     LEVEL = ('level 1','Level 2','Level 3', 'Level 4', 'Level 5','Level 6','Level 7',)
 
     locationlevel_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    type = models.CharField(max_length=50, choices=make_choices(LEVEL), default=LEVEL[0],
-        verbose_name = 'Location Level')  # Field name made lowercase.
-    name = models.CharField(max_length=230, blank=False, null=False,verbose_name = 'Level Name')  # Field name made lowercase.
+    type = models.CharField(max_length=50, choices=make_choices(LEVEL),
+        default=LEVEL[0],verbose_name = 'Location Level')  # Field name made lowercase.
+    name = models.CharField(max_length=230, blank=False, null=False,
+        verbose_name = 'Level Name')  # Field name made lowercase.
     code = models.CharField(unique=True, max_length=50, blank=True, null=False)  # Field name made lowercase.
     description = models.TextField(blank=True, null=True)  # Field name made lowercase.
 
@@ -29,8 +30,10 @@ class StgLocationLevel(CommonInfo):
 
 class StgEconomicZones(CommonInfo):
     economiczone_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = models.CharField(max_length=36,blank=False, null=False,verbose_name = 'Universal ID')  # Field name made lowercase.
-    name = models.CharField(max_length=230,blank=False, null=False,verbose_name = 'Economic Block')  # Field name made lowercase.
+    uuid = models.CharField(max_length=36,blank=False,null=False,
+        verbose_name = 'Universal ID')  # Field name made lowercase.
+    name = models.CharField(max_length=230,blank=False,
+        null=False,verbose_name = 'Economic Block')  # Field name made lowercase.
     code = models.CharField(max_length=50, unique=True, blank=True, null=False)  # Field name made lowercase.
     shortname = models.CharField(unique=True,max_length=50, blank=True, null=True,
         verbose_name = 'Short Name')  # Field name made lowercase.
@@ -76,9 +79,8 @@ class StgLocation(CommonInfo):
     end_date= models.DateTimeField(blank=True, null=True, auto_now=True,
         verbose_name = 'Date Modified')
     source_system = models.CharField(unique=False,max_length=100, blank=True,
-        null=False, verbose_name = 'Source Name')
-    public_access = models.CharField(max_length=6, blank=False, null=False,
-        verbose_name = 'Public Access',default='false')
+        null=True, verbose_name = 'Source Name')
+    public_access = models.BooleanField(default=False)
     sort_order = models.SmallIntegerField(blank=True, null=True)
 
     class Meta:

@@ -24,7 +24,8 @@ from django.contrib.auth.decorators import permission_required #for approval act
 from khro_app.common_info.admin import OverideImportExport, OverideExport
 
 from django_admin_listfilter_dropdown.filters import (
-    DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter, RelatedOnlyDropdownFilter) #custom
+    DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
+    RelatedOnlyDropdownFilter) #custom
 
 #the following 3 functions are used to register global actions performed on the data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -39,9 +40,12 @@ def transition_to_rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
-'''---------------------------------------------------------------------------------------------------
-These are ModelAdmins that facilitate viewing of raw data elements from other systems like DHIS2
-------------------------------------------------------------------------------------------------------'''
+'''
+---------------------------------------------------------------------------
+These are ModelAdmins that facilitate viewing of raw data elements from other
+ systems like DHIS2
+-----------------------------------------------------------------------------
+'''
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
@@ -63,7 +67,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
 
 
 class GroupedModelChoiceField(ModelChoiceField):
-    def __init__(self, group_by_field, group_label=None, cache_choices=False, *args, **kwargs):
+    def __init__(self, group_by_field, group_label=None,cache_choices=False,*args, **kwargs):
         """
         group_by_field is the name of a field on the model
         group_label is a function to return a label for each choice group
@@ -100,12 +104,12 @@ class DataElementAdmin(OverideExport):
             }),
             ('Secondary Attributes', {
                 'fields': ('domain_type','dimension_type','value_type',
-                'aggregation_type','categoryoption'),
+                'aggregation_type','categoryoption','public_access'),
             }),
         )
 
     resource_class = DataElementExport #added to customize fields displayed on the import window
-    list_display=['code','name', 'shortname','description', 'domain_type',]
+    list_display=['name','code','shortname','description', 'domain_type',]
     list_display_links = ('code', 'name',)
 
     search_fields = ('name', 'code','domain_type',) #display search field
@@ -142,10 +146,14 @@ class DataElementProxyForm(forms.ModelForm):
         end_year = cleaned_data.get(end_year_field)
 
         if dataelement and location and categoryoption and start_year and end_year:
-            if FactDataElement.objects.filter(dataelement=dataelement, location=location, categoryoption=categoryoption,
+            if FactDataElement.objects.filter(dataelement=dataelement,
+                location=location, categoryoption=categoryoption,
                 start_year=start_year,end_year=end_year).exists():
 
-                """ pop(key) method removes the specified key and returns the corresponding value. Returns error If key does not exist"""
+                """
+                pop(key) method removes the specified key and returns the
+                corresponding value. Returns error If key does not exist
+                """
                 cleaned_data.pop(dataelement_field)  # is also done by add_error
                 cleaned_data.pop(location_field)
                 cleaned_data.pop(categoryoption_field)
@@ -154,7 +162,8 @@ class DataElementProxyForm(forms.ModelForm):
 
                 if end_year < start_year:
                     raise ValidationError({'start_year':_(
-                        'Sorry! Ending year cannot be lower than the start year. Please make corrections')})
+                        'Sorry! Ending year cannot be lower than the start year. \
+                            Please make corrections')})
         return cleaned_data
 
     class Meta:
@@ -168,9 +177,12 @@ data_wizard.register(FactDataElement) #register fact data element serializer to 
 class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     form = DataElementProxyForm #overrides the default django form
     """
-    Davy requested that a user does not see other countries data. This function does exactly that by filtering location based on logged in user
-    For this reason only the country of the loggied in user is displayed whereas the superuser has access to all the countries
-    Thanks Good for https://docs.djangoproject.com/en/2.2/ref/contrib/admin/ because is gave the exact logic of achiving this non-functional requirement
+    Davy requested that a user does not see other countries data. This function
+    does exactly that by filtering location based on logged in user. For this
+    reason only the country of the loggied in user is displayed whereas the
+    superuser has access to all the counties. Thanks to
+    https://docs.djangoproject.com/en/2.2/ref/contrib/admin/ because is gave the
+    exact logic of achiving this non-functional requirement
     """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -179,27 +191,32 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
         return qs.filter(location=request.user.location) #provide access to user's country instances of data elements
 
     """
-    Davy requested that the form for data input be restricted to the user's country. Thus, this function is for filtering location to
-     display country level. The location is used to fielter the dropdownlist based on the request object's USER, If the user is
-    superuser, he/she can enter data for all the AFRO member countries otherwise, can only enter data for his/her country.
+    The form for data input must be restricted to the user's country. Thus, this
+    function is for filtering location to display country level. The location
+    is used to fielter the dropdownlist based on the request object's USER, If
+    the user is superuser, he/she can enter data for all the AFRO member
+    countries otherwise, can only enter data for his/her country.
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs): #to implement user filtering her
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country','County'] ).order_by('locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admins'): #This works like charm!! only AFRO admin staff are allowed to process all countries and data
+                locationlevel__name__in =['Regional','Country','County'] ).order_by(
+                'locationlevel', 'location_id')
+            elif request.user.groups.filter(name__icontains='Admins'):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country','County']).order_by('locationlevel', 'location_id')
+                locationlevel__name__in =['Regional','Country','County']).order_by(
+                'locationlevel', 'location_id')
             else:
-                kwargs["queryset"] = StgLocation.objects.filter(location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    #This function is used to get the afrocode from related indicator model for use in list_display
+    #This function is used to get code from related indicator model for use in list_display
     def get_afrocode(obj):
         return obj.dataelement.code
-    get_afrocode.admin_order_field  = 'dataelement__code'  #Lookup to allow column sorting by AFROCODE
-    get_afrocode.short_description = 'Data Element Code'  #Renames column head
+    get_afrocode.admin_order_field  = 'dataelement__code'
+    get_afrocode.short_description = 'Data Element Code'
 
     #The following function returns available export formats.
     def get_export_formats(self):
@@ -248,9 +265,11 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
             }),
         )
     #The list display includes a callable get_afrocode that returns data element code for display on admin pages
-    list_display=['location','dataelement',get_afrocode,'period','value','datasource','get_comment_display',]
+    list_display=['location','dataelement',get_afrocode,'period','value',
+        'datasource','get_comment_display',]
     list_display_links = ('location', get_afrocode,'dataelement',) #For making the code and name clickable
-    search_fields = ('dataelement__name', 'location__name','period','dataelement__code') #display search field
+    search_fields = ('dataelement__name', 'location__name','period',
+        'dataelement__code') #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     list_filter = (
         ('location', RelatedOnlyDropdownFilter,),
@@ -268,23 +287,28 @@ class FactElementInline(admin.TabularInline):
     extra = 1 # Very useful in controlling the number of empty rows displayed.In this case zero is Ok for insertion or changes
 
     """
-    This function is for filtering location to display country level. the database field must be parentid
-    for the dropdown list    Note the use of locationlevel__name__in as helper for the name lookup while
-    (__in)suffix is a special case that works with tuples in Python.
+    This function is for filtering location to display country level. the database
+    field must be parentid for the dropdown list    Note the use of
+    locationlevel__name__in as helper for the name lookup while (__in)suffix
+     is a special case that works with tuples in Python.
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country','County']).order_by('locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+                locationlevel__name__in =['Regional','Country','County']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(name__icontains='Admins'): #This works like charm!! only AFRO admin staff are allowed to process all countries and data
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country','County']).order_by('locationlevel', 'location_id')
+                locationlevel__name__in =['Regional','Country','County']).order_by(
+                    'locationlevel', 'location_id')
             else:
-                kwargs["queryset"] = StgLocation.objects.filter(location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    fields = ('dataelement','location','datasource', 'valuetype','start_year', 'end_year','value','target_value',)
+    fields = ('dataelement','location','datasource', 'valuetype','start_year',
+        'end_year','value','target_value',)
 
 
 @admin.register(models.DataElementProxy)
@@ -315,12 +339,12 @@ class DataElementProxyAdmin(ExportMixin, admin.ModelAdmin):
         return [f for f in formats if f().can_export()]
 
     #list_display_links = ('code', 'name',)
-    resource_class = FactDataResourceExport #added to customize fields displayed on the import window
+    resource_class = FactDataResourceExport
 
     inlines = [FactElementInline] # Use tabular form within the data element modelform
 
     fields = ('code', 'name')
-    list_display=['code','name', 'domain_type','description',]
+    list_display=['name','code','domain_type','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('domain_type','code','name',) #display search field
     readonly_fields = ('code','name','description',)

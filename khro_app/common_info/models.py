@@ -6,7 +6,7 @@ from django.utils import timezone
 class CommonInfo(models.Model):
     date_created = models.DateTimeField(
         default=timezone.now, verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(
+    date_lastupdated = models.DateTimeField( blank=True, null=True,
         default=timezone.now, verbose_name = 'Date Modified')
 
     class Meta:

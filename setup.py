@@ -93,7 +93,6 @@ setup(
         'djangorestframework-jwt==1.8.0',
         'django-filter==1.1.0',
         'django-cors-headers==2.2.0',
-        'dj-database-url==0.5.0',
         'mysqlclient==1.4.6',
         'Click==6.7',
         'sarge==0.1.5',

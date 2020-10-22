@@ -10,8 +10,8 @@ from django.core.exceptions import ValidationError # for custome validation
 from django.utils.translation import gettext_lazy as _
 
 from .models import (StgLocation, IndicatorProxy,StgIndicator, StgIndicatorDomain,
-    FactDataIndicator,Fact_indicator_archive,StgAnalyticsNarrative,StgIndicatorReference,
-    StgNarrative_Type,StgIndicatorNarrative)
+    FactDataIndicator,Fact_indicator_archive,StgAnalyticsNarrative,
+    StgIndicatorReference,StgNarrative_Type,StgIndicatorNarrative)
 
 
 from .resources import (
@@ -20,13 +20,15 @@ from .resources import (
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
     ImportMixin,ImportExportActionModelAdmin)
 from import_export.formats import base_formats
-from khro_app.home.models import StgDisagoptionCombination #This are additional imports to override default Django forms
+from khro_app.home.models import StgDisagoptionCombination
 from django.forms.models import ModelChoiceField, ModelChoiceIterator
 from django.contrib.auth.decorators import permission_required #for approval actions
-from khro_app.common_info.admin import OverideImportExport, OverideExport, OverideExportAdmin #added new override for admin action
+from khro_app.common_info.admin import (OverideImportExport, OverideExport,
+    OverideExportAdmin) #added new override for admin action
 
 from django_admin_listfilter_dropdown.filters import (
-    DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter, RelatedOnlyDropdownFilter) #custom
+    DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
+    RelatedOnlyDropdownFilter) #custom
 
 import data_wizard #this may be the Godsent solution to data import madness that has refused to go
 from khro_app.indicators.serializers import FactDataIndicatorSerializer
@@ -64,7 +66,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
 
 
 class GroupedModelChoiceField(ModelChoiceField):
-    def __init__(self, group_by_field, group_label=None, cache_choices=False, *args, **kwargs):
+    def __init__(self, group_by_field,group_label=None, cache_choices=False,*args, **kwargs):
         """
         group_by_field is the name of a field on the model
         group_label is a function to return a label for each choice group
@@ -97,13 +99,16 @@ class IndicatorAdmin(admin.ModelAdmin): #add export action to facilitate export 
 
     fieldsets = (
         ('Primary Details', {
-                'fields': ('name','shortname','hiscode','afrocode','measuremethod',) #afrocode may be null
+                'fields': ('name','shortname','hiscode','afrocode',
+                'measuremethod',) #afrocode may be null
             }),
             ('Detailed Definitions', {
-                'fields': ('definition','numerator_description', 'denominator_description',),
+                'fields': ('definition','numerator_description',
+                'denominator_description',),
             }),
             ('Data Source & Reporting', {
-                'fields': ('frame_level','data_sources','periodicity','reference','public_access'),
+                'fields': ('frame_level','data_sources','periodicity','reference',
+                'public_access'),
             }),
         )
     list_display=['name','shortname','code','hiscode','afrocode','definition',]
@@ -125,7 +130,7 @@ class IndicatorDomainAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Domain Attributes', {
-                'fields': ('name', 'shortname','parent','level') #afrocode may be null
+                'fields': ('name', 'shortname','parent','level','public_access') #afrocode may be null
             }),
             ('Domain Description', {
                 'fields': ('description','indicator'),
@@ -152,31 +157,24 @@ class IndicatorRefAdmin(OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'80'})},
-        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':150})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
     fieldsets = (
         ('Reference Attributes', {
-                'fields': ('name','shortname',)
-            }),
-            ('Description', {
-                'fields': ('description',),
+                'fields': ('name','shortname','description')
             }),
         )
-    list_display=['code','name','description',]
+    list_display=['name','code','shortname','description']
     list_display_links = ('code', 'name',)
     search_fields = ('code','name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
 
 class IndicatorProxyForm(forms.ModelForm):
-
-    # categoryoption = GroupedModelChoiceField(group_by_field='category_options',
-    #     #This queryset was modified by Daniel to order the grouped list by  date created
-    #     queryset=StgDisagoptionCombination.objects.all().order_by('category__category_id'),
-    # )
     class Meta:
-        fields = ('indicator','location', 'categoryoption','start_period', 'end_period','period','value_received')
+        fields = ('indicator','location', 'categoryoption','start_period',
+            'end_period','period','value_received')
         model = models.FactDataIndicator
 
     def clean(self):
@@ -198,10 +196,15 @@ class IndicatorProxyForm(forms.ModelForm):
         end_period = cleaned_data.get(end_year_field)
 
         if indicator and location and categoryoption and start_period and end_period:
-            if FactDataIndicator.objects.filter(indicator=indicator, location=location,
-                categoryoption=categoryoption, start_period=start_period,end_period=end_period).exists():
+            if FactDataIndicator.objects.filter(
+                indicator=indicator, location=location,
+                categoryoption=categoryoption,start_period=start_period,
+                end_period=end_period).exists():
 
-                """ pop(key) method removes the specified key and returns the corresponding value. Returns error If key does not exist"""
+                """
+                The pop(key) method removes the specified key and returns the
+                corresponding value. Returns error If key does not exist
+                """
                 cleaned_data.pop(indicator_field)  # is also done by add_error
                 cleaned_data.pop(location_field)
                 cleaned_data.pop(categoryoption_field)
@@ -210,7 +213,8 @@ class IndicatorProxyForm(forms.ModelForm):
 
                 if end_period < start_period:
                     raise ValidationError({'start_period':_(
-                        'Sorry! Ending year cannot be lower than the start year. Please make corrections')})
+                        'Sorry! Ending year cannot be lower than the start year.\
+                            Please make corrections')})
         return cleaned_data
 
 
@@ -221,33 +225,44 @@ class IndicatorFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     form = IndicatorProxyForm #overrides the default django form
 
     """
-    Davy requested that a user does not see other countries data. This function does exactly that by filtering location based on logged in user
-    For this reason only the country of the loggied in user is displayed whereas the superuser has access to all the countries
-    Thanks Good for https://docs.djangoproject.com/en/2.2/ref/contrib/admin/ because is gave the exact logic of achiving this non-functional requirement
+    Davy requested that a user does not see other countries data. This function
+    does exactly that by filtering location based on logged in user
+    For this reason only the country of the loggied in user is displayed
+    whereas the superuser has access to all the countries
+    Thanks Good for https://docs.djangoproject.com/en/2.2/ref/contrib/admin/
+    because is gave the exact logic of achiving this non-functional requirement
     """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         #This works like charm!! only superusers and AFRO admin staff are allowed to view all countries and data
-        if request.user.is_superuser or request.user.groups.filter(name__icontains='Admins'):
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin'):
             return qs #provide access to all instances/rows of fact data indicators
         return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
 
     """
-    Davy requested that the form for data input be restricted to the user's country. Thus, this function is for filtering location to display
-    country level. The location is used to fielter the dropdownlist based on the request object's USER, If the user has superuser privileges
-    or is a member of AFRO-DataAdmins, he/she can enter data for all the AFRO member countries otherwise, can only enter data for his/her country.
-    The order_by('locationlevel', 'location_id') clause make sure that the regional offices are first displayed in ascending order
+    Davy requested that the form for data input be restricted to the user's
+    country. Thus, this function is for filtering location to display
+    country level. The location is used to fielter the dropdownlist based on
+    the request object's USER, If the user has superuser privileges
+    or is a member of AFRO-DataAdmins, he/she can enter data for all counties
+    otherwise, can only enter data for his/her county.
+    The order_by('locationlevel', 'location_id') clause make sure that the
+    highest locations are first displayed in ascending order
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs): #to implement user filtering her
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country','County']).order_by('locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+                locationlevel__name__in =['Regional','Country','County']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(name__icontains='Admins'): #This works like charm!! only AFRO admin staff are allowed to process all countries and data
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country','County']).order_by('locationlevel', 'location_id')
+                locationlevel__name__in =['Regional','Country','County']).order_by(
+                    'locationlevel', 'location_id')
             else:
-                kwargs["queryset"] = StgLocation.objects.filter(location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     #This function is used to get the afrocode from related indicator model for use in list_display
@@ -277,16 +292,20 @@ class IndicatorFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     readonly_fields = ('indicator', 'location', 'start_period',)
     fieldsets = ( # used to create frameset sections on the data entry form
         ('Indicator Details', {
-                'fields': ('indicator','location', 'categoryoption','datasource','measure_type')
+                'fields': ('indicator','location', 'categoryoption','datasource',
+                    'measure_type')
             }),
             ('Reporting Period & Values', {
-                'fields': ('start_period','end_period','value_received','numerator_value','denominator_value','min_value','max_value','target_value',),
+                'fields': ('start_period','end_period','value_received',
+                    'numerator_value',
+                'denominator_value','min_value','max_value','target_value',),
             }),
         )
     # The list display includes a callable get_afrocode that returns indicator code for display on admin pages
-    list_display=['location', 'indicator',get_code,'period','categoryoption','value_received','target_value','datasource',] # ,'get_comment_display'
+    list_display=['location', 'indicator',get_code,'period','categoryoption',
+        'value_received','target_value','datasource',] # ,'get_comment_display'
     list_display_links = ('location',get_code, 'indicator',) #display as clickable link
-    search_fields = ('indicator__name', 'location__name','period','indicator__afrocode') #display search field
+    search_fields = ('indicator__name','location__name','period','indicator__afrocode') #display search field
     # search_fields = ('indicator__afrocode','indicator__name', 'location__name', 'datasource','start_period','end_period',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     list_filter = (
@@ -303,27 +322,33 @@ class IndicatorFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
 class FactIndicatorInline(admin.TabularInline):
     form = IndicatorProxyForm #overrides the default django form
     model = models.FactDataIndicator
-    extra = 1 # Very useful in controlling the number of empty rows displayed.In this case zero is ok for insertion or changes
+    extra = 3 # Very useful in controlling the number of empty rows displayed.In this case zero is ok for insertion or changes
 
     """
-    Davy requested that the form input be restricted to the user's country. Thus, this function is for filtering location to
-     display country level. The location is used to fielter the dropdownlist based on the request object's USER, If the user is
-    superuser, he/she can enter data for all the AFRO member countries otherwise, can only enter data for his/her country.
+    Davy requested that the form input be restricted to the user's country.
+    Thus, this function is for filtering location to display country level.
+    The location is used to fielter the dropdownlist based on the request object's
+    USER, If the user is superuser, he/she can enter data for all the AFRO member
+     countries otherwise, can only enter data for his/her country.
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country']).order_by('locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+                locationlevel__name__in =['Regional','Country']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(name__icontains='Admins'): #This works like charm!! only AFRO admin staff are allowed to process all countries and data
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country']).order_by('locationlevel', 'location_id')
+                locationlevel__name__in =['Regional','Country']).order_by(
+                    'locationlevel', 'location_id')
             else:
-                kwargs["queryset"] = StgLocation.objects.filter(location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    fields = ('indicator','location', 'datasource','measure_type','start_period','end_period','categoryoption','numerator_value',
-                'denominator_value', 'value_received','min_value','max_value','target_value',)
+    fields = ('indicator','location', 'datasource','measure_type','start_period',
+                'end_period','categoryoption','numerator_value','denominator_value',
+                 'value_received','min_value','max_value','target_value',)
 
 
 @admin.register(IndicatorProxy)
@@ -334,7 +359,7 @@ class IndicatorProxy(OverideExport):
 
     resource_class = IndicatorResourceExport #added to customize fields displayed on the import window
     inlines = [FactIndicatorInline] #try tabular form
-    readonly_fields = ('code','afrocode', 'name',) # Make it read-only for referential integrity constraunts
+    readonly_fields = ('name','code','afrocode',) # Make it read-only for referential integrity constraunts
     fields = ('name','code','afrocode',)
     list_display=['code','name','afrocode',]
     list_display_links=['code','afrocode', 'name']
@@ -342,7 +367,6 @@ class IndicatorProxy(OverideExport):
 
 @admin.register(Fact_indicator_archive)
 class IndicatorFactArchiveAdmin(OverideExportAdmin):
-
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
 
@@ -357,13 +381,16 @@ class IndicatorFactArchiveAdmin(OverideExportAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         #This works like charm!! only superusers and AFRO admin staff are allowed to view all countries and data
-        if request.user.is_superuser or request.user.groups.filter(name__icontains='Admins'):
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admins'):
             return qs #provide access to all instances/rows of fact data indicators
         return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
 
     resource_class = AchivedIndicatorResourceExport
-    list_display=['location', 'indicator',get_afrocode,'period','categoryoption','value_received','target_value',] #'get_comment_display',
-    search_fields = ('indicator__name', 'location__name','period','indicator__afrocode') #display search field
+    list_display=['location', 'indicator',get_afrocode,'period',
+    'categoryoption','value_received','target_value',] #'get_comment_display',
+    search_fields = ('indicator__name', 'location__name',
+    'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 50
     list_filter = (
         ('location', RelatedOnlyDropdownFilter,),
@@ -378,11 +405,72 @@ class IndicatorGoupAdmin(OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':150})},
     }
 
-    field = ('name','shortname', 'description',) # used to create frameset sections on the data entry form
-    list_display=['code','name','shortname', 'description',]
+    # # This method is used to handle many-to-many relationship for list_display
+    # def get_indicator(self, obj):
+    #     return "\n".join([p.get_indicator for p in obj.get_indicator.all()])
+
+    field = ('indicator','name','shortname', 'description',)
+    list_display=['get_indicators','code','name','shortname', 'description',]
     list_display_links = ('code', 'name',)
     filter_horizontal = ('indicator',) # this should display an inline with multiselect
-    exclude = ('code',)
+    exclude = ('code','date_created','date_lastupdated',)
+    list_filter = (
+        ('indicator', RelatedOnlyDropdownFilter,), # to inestigate this list filter
+    )
+
+
+@admin.register(models.StgNarrative_Type)
+class NarrativeTypeAdmin(OverideExport):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'80'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':150})},
+    }
+
+    field = ('name','shortname','description',)
+    list_display=['name','code','shortname','description',]
+    list_display_links = ('name', 'code',)
+    exclude = ('code','date_created','date_lastupdated',)
+
+
+@admin.register(models.StgAnalyticsNarrative)
+class DomainNarrativeAdmin(OverideExport):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'80'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':150})},
+    }
+
+    field = ('narrative_type','narrative_text','domain', 'location',)
+    list_display=['narrative_text','code','narrative_type','domain',
+        'location','period']
+    list_display_links = ('code', 'narrative_text',)
+    exclude = ('code','date_created','date_lastupdated','period')
+    readonly_fields = ('status',)
+    list_filter = (
+        ('domain', RelatedOnlyDropdownFilter,),
+        ('location', RelatedOnlyDropdownFilter,),
+    )
+
+
+@admin.register(models.StgIndicatorNarrative)
+class IndicatorsNarrativeAdmin(OverideExport):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'80'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':150})},
+    }
+
+    field = ('type','narrative_text','indicator', 'location',)
+    list_display=['narrative_text','code','type','indicator','location','period']
+    list_display_links = ('code', 'narrative_text',)
+    exclude = ('code','date_created','date_lastupdated','period')
+    readonly_fields = ('status',)
+    list_filter = (
+        ('indicator', RelatedOnlyDropdownFilter,),
+        ('location', RelatedOnlyDropdownFilter,),
+    )
+
 
 @admin.register(models.StgIndicatorSuperGroup)
 class IndicatorSuperGoupAdmin(OverideExport):
@@ -392,8 +480,8 @@ class IndicatorSuperGoupAdmin(OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':150})},
     }
 
-    field = ('name','shortname','description',) # used to create frameset sections on the data entry form
+    field = ('name','shortname','description',)
     list_display=['code','name','shortname', 'description',]
     list_display_links=['code','name','shortname',]
-    filter_horizontal = ('indicator_groups',) # this should display an inline with multiselect
-    exclude = ('code',)
+    filter_horizontal = ('indicator_groups',)
+    exclude = ('code','date_created','date_lastupdated',)

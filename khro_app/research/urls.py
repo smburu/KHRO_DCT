@@ -22,7 +22,4 @@ router.register(
 router.register(
     r'stg_research_proposal', views.StgResearchProposalViewSet,
     'stg_research_proposal')
-router.register(
-    r'stg_research_publication', views.StgResearchPublicationViewSet,
-    'stg_research_publication')
 urlpatterns = router.urls
